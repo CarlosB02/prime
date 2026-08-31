@@ -1,0 +1,139 @@
+
+        {activeTab === 'avaliacoes' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white">Histórico de Avaliações</h3>
+              <div className="flex gap-2">
+                <button className="px-4 py-2 bg-slate-50 dark:bg-slate-900/20 text-slate-600 dark:text-slate-400 rounded-xl text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-900/40 transition-colors">
+                  Guardar notas
+                </button>
+                <button className="px-4 py-2 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-xl text-sm font-medium hover:bg-primary-100 dark:hover:bg-primary-900/40 transition-colors">
+                  Comparar avaliações físicas
+                </button>
+                <button 
+                  onClick={() => {
+                    setAssessmentModalMode('add');
+                    setCurrentAssessmentData(undefined);
+                    setIsPhysicalAssessmentModalOpen(true);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 transition-colors shadow-lg shadow-primary-500/20"
+                >
+                  <Plus size={16} />
+                  Nova Avaliação
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left whitespace-nowrap">
+                  <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-700">
+                    <tr>
+                      <th className="px-6 py-4">ID</th>
+                      <th className="px-6 py-4">Data</th>
+                      <th className="px-6 py-4">Estado</th>
+                      <th className="px-6 py-4">Cintura (cm)</th>
+                      <th className="px-6 py-4">Anca (cm)</th>
+                      <th className="px-6 py-4">Peso (kg)</th>
+                      <th className="px-6 py-4">Variação de peso</th>
+                      <th className="px-6 py-4">Observações</th>
+                      <th className="px-6 py-4">Feedback do Treinador</th>
+                      <th className="px-6 py-4 text-right">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                    {MOCK_ASSESSMENTS.map((assessment, index) => (
+                      <tr key={assessment.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td className="px-6 py-4 font-mono text-xs text-slate-500">{assessment.id}</td>
+                        <td className="px-6 py-4 font-medium whitespace-nowrap">{new Date(assessment.date).toLocaleDateString('pt-PT')}</td>
+                        <td className="px-6 py-4">
+                          <div className="relative">
+                            <select
+                              defaultValue={assessment.status}
+                              className={`appearance-none pl-3 pr-8 py-1 rounded-md text-xs font-semibold uppercase tracking-wide cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/50 ${
+                                assessment.status === 'validado' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                                assessment.status === 'em_progresso' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                                'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                              }`}
+                            >
+                              <option value="validado" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">Validado</option>
+                              <option value="em_progresso" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">Por fazer (em progresso)</option>
+                              <option value="concluido" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">Por fazer (concluído)</option>
+                            </select>
+                            <ChevronDown className={`absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none ${
+                                assessment.status === 'validado' ? 'text-emerald-700 dark:text-emerald-400' :
+                                assessment.status === 'em_progresso' ? 'text-amber-700 dark:text-amber-400' :
+                                'text-blue-700 dark:text-blue-400'
+                            }`} />
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          {assessment.measures.cintura}
+                          {assessment.cinturaVariation !== undefined && (
+                            <span className={`ml-1 text-xs font-bold ${assessment.cinturaVariation > 0 ? 'text-rose-500' : assessment.cinturaVariation < 0 ? 'text-emerald-500' : 'text-slate-400'}`}>
+                              ({assessment.cinturaVariation > 0 ? '+' : ''}{assessment.cinturaVariation}cm)
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">{assessment.measures.anca}</td>
+                        <td className="px-6 py-4">{assessment.weight}</td>
+                        <td className={`px-6 py-4 font-bold whitespace-nowrap ${
+                          (assessment.weightVariation || 0) > 0 ? 'text-rose-500' : (assessment.weightVariation || 0) < 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-400'
+                        }`}>
+                          {(assessment.weightVariation || 0) > 0 ? '+' : ''}{(assessment.weightVariation || 0) === 0 ? '-' : `${assessment.weightVariation} kg`}
+                        </td>
+                        <td className="px-6 py-4 px-2">
+                          {assessment.questions ? (
+                            <button 
+                              onClick={() => {
+                                setCurrentAssessmentNotes(assessment.questions);
+                                setIsAssessmentNotesModalOpen(true);
+                              }}
+                              className="p-2 text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 bg-slate-50 dark:bg-slate-900/50 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-colors"
+                              title="Ver observações"
+                            >
+                              <FileText size={16} />
+                            </button>
+                          ) : (
+                            <span className="text-slate-300 dark:text-slate-600 px-2">-</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          {assessment.trainerFeedback ? (
+                            <span className="text-slate-600 dark:text-slate-300 text-sm truncate max-w-[150px] inline-block" title={assessment.trainerFeedback}>
+                              {assessment.trainerFeedback}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400 dark:text-slate-500 italic text-xs">Sem feedback</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-2">
+                            <button 
+                              onClick={() => {
+                                setAssessmentModalMode('view');
+                                setCurrentAssessmentData(assessment);
+                                setPreviousAssessmentData(MOCK_ASSESSMENTS[index + 1]);
+                                setIsPhysicalAssessmentModalOpen(true);
+                              }}
+                              className="p-2 text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-colors"
+                              title="Visualizar avaliação"
+                            >
+                              <Eye size={18} />
+                            </button>
+                            <button 
+                              className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
+                              title="Eliminar avaliação"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}

@@ -1,0 +1,12 @@
+--- components/clients/ClientDetailsView.tsx
++++ components/clients/ClientDetailsView.tsx
+@@ -871,8 +871,8 @@
+               setCurrentAssessmentData(assessment);
+               setIsPhysicalAssessmentModalOpen(true);
+             }}
+-            onDelete={(id) => console.log(Eliminar avaliação:, id)}
+-            onExport={(id) => console.log(Exportar avaliação:, id)}
++            onDelete={(id) => console.log("Eliminar avaliação:", id)}
++            onExport={(id) => console.log("Exportar avaliação:", id)}
+           />
+         )}

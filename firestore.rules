@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    
+    function isValidClient(data) {
+      return data.keys().hasAll(['name', 'ownerId', 'createdAt'])
+        && data.name is string && data.name.size() <= 100
+        && data.ownerId is string && data.ownerId == request.auth.uid
+        && data.createdAt is timestamp;
+    }
+    
+    match /clients/{clientId} {
+      allow read: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(clientId) && isValidClient(incoming()) && incoming().createdAt == request.time;
+      allow update: if isSignedIn() && isValidId(clientId) && incoming().ownerId == existing().ownerId && isValidClient(incoming());
+      allow delete: if isSignedIn() && existing().ownerId == request.auth.uid;
+    }
+    
+    match /exercises/{exerciseId} {
+      allow read: if isSignedIn() && (existing().ownerId == request.auth.uid || existing().ownerId == "system");
+      allow create: if isSignedIn() && isValidId(exerciseId) && incoming().ownerId == request.auth.uid && incoming().createdAt == request.time;
+      allow update: if isSignedIn() && isValidId(exerciseId) && incoming().ownerId == existing().ownerId;
+      allow delete: if isSignedIn() && existing().ownerId == request.auth.uid;
+    }
+  }
+}

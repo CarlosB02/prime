@@ -1,0 +1,61 @@
+{
+  "entities": {
+    "Client": {
+      "title": "Client",
+      "description": "Represents a client in the system.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 100 },
+        "avatar": { "type": "string" },
+        "plan": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "pending", "inactive", "completed", "warning"] },
+        "lastActive": { "type": "string" },
+        "contact": { "type": "string" },
+        "progress": { "type": "number" },
+        "evaluationStatus": { "type": "string", "enum": ["por_validar", "pendente", "concluida"] },
+        "isNew": { "type": "boolean" },
+        "paymentStatus": { "type": "string", "enum": ["pago", "expirado", "a_expirar"] },
+        "birthday": { "type": "string" },
+        "paymentExpiryDate": { "type": "string" },
+        "age": { "type": "number" },
+        "isPaying": { "type": "boolean" },
+        "hasSubscription": { "type": "boolean" },
+        "nextEvaluationDate": { "type": "string" },
+        "ownerId": { "type": "string", "description": "The PT who owns this client" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["name", "ownerId", "createdAt"]
+    },
+    "Exercise": {
+      "title": "Exercise",
+      "description": "An exercise in the exercise library",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 100 },
+        "image": { "type": "string" },
+        "muscleGroup": { "type": "string" },
+        "type": { "type": "string" },
+        "equipment": { "type": "string" },
+        "difficulty": { "type": "string" },
+        "videos": { "type": "array" },
+        "description": { "type": "string", "maxLength": 1000 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "isDeleted": { "type": "boolean" },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name", "ownerId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "clients/{clientId}": {
+      "schema": { "$ref": "#/entities/Client" },
+      "description": "Stores client records for personal trainers."
+    },
+    "exercises/{exerciseId}": {
+      "schema": { "$ref": "#/entities/Exercise" },
+      "description": "Stores exercise library for personal trainers."
+    }
+  }
+}
