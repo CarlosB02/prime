@@ -115,9 +115,9 @@ const App: React.FC = () => {
     );
   }
 
-  if (!user) {
-    return <LoginView />;
-  }
+  // if (!user) {
+  //   return <LoginView />;
+  // }
 
   return (
     <div className="flex h-screen w-full bg-slate-50 dark:bg-darkbg text-slate-900 dark:text-slate-100 relative overflow-hidden">
