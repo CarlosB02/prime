@@ -1,4 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { useCollectionData } from 'react-firebase-hooks/firestore';
+import { collection, query, where, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { db, auth } from '../../lib/firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { 
   Search, 
   Plus, 
@@ -28,7 +32,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { Client } from '../../types';
-import { MOCK_CLIENTS, MOCK_QUESTIONNAIRES } from '../../constants';
+import { MOCK_CLIENTS } from '../../constants';
 import SendNotificationModal from './SendNotificationModal';
 import QuickActionModal, { QuickActionModalType } from './QuickActionModal';
 import ClientDetailsView from './ClientDetailsView';
@@ -46,7 +50,16 @@ type QuickFilterType =
   | 'inactive_suspended';
 
 const ClientsView: React.FC = () => {
-  const [clients, setClients] = useState<Client[]>(MOCK_CLIENTS);
+  const [user] = useAuthState(auth);
+  
+  // Firebase Data
+  const clientsRef = collection(db, 'clients');
+  // For the admins (Carlos and Renato), we can just fetch all clients in this private instance
+  const q = query(clientsRef);
+  const [firebaseClients, loading, error] = useCollectionData(q, { idField: 'id' });
+  
+  const clients = (firebaseClients as Client[]) || [];
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [tableFilter, setTableFilter] = useState<string>('todos');
   const [quickFilter, setQuickFilter] = useState<QuickFilterType>('all');
@@ -182,17 +195,46 @@ const ClientsView: React.FC = () => {
     setClientToDelete(client);
   };
 
-  const confirmDelete = () => {
-    if (clientToDelete) {
-      setClients(clients.filter(c => c.id !== clientToDelete.id));
-      setClientToDelete(null);
+  const confirmDelete = async () => {
+    if (clientToDelete && clientToDelete.id) {
+      try {
+        await deleteDoc(doc(db, 'clients', clientToDelete.id));
+        setClientToDelete(null);
+      } catch (e) {
+        console.error("Erro ao eliminar cliente:", e);
+        alert("Não foi possível eliminar o cliente.");
+      }
     }
   };
 
-  const confirmSuspend = () => {
-    if (clientToDelete) {
-      setClients(clients.map(c => c.id === clientToDelete.id ? { ...c, status: 'warning' } : c));
-      setClientToDelete(null);
+  const confirmSuspend = async () => {
+    if (clientToDelete && clientToDelete.id) {
+      try {
+        await updateDoc(doc(db, 'clients', clientToDelete.id), {
+          status: 'warning'
+        });
+        setClientToDelete(null);
+      } catch (e) {
+        console.error("Erro ao suspender cliente:", e);
+        alert("Não foi possível suspender o cliente.");
+      }
+    }
+  };
+
+  // Temporary function to seed database if empty
+  const seedDatabase = async () => {
+    if (!user) return;
+    try {
+      for (const client of MOCK_CLIENTS) {
+        const clientData = { ...client, ownerId: user.uid, createdAt: new Date() };
+        // Remove the hardcoded ID so Firestore generates one
+        delete (clientData as any).id;
+        await addDoc(collection(db, 'clients'), clientData);
+      }
+      alert("Clientes migrados com sucesso!");
+    } catch (e) {
+      console.error(e);
+      alert("Erro ao migrar clientes.");
     }
   };
 
@@ -227,6 +269,15 @@ const ClientsView: React.FC = () => {
 
         {/* Right: Actions */}
         <div className="flex gap-3 w-full md:w-auto justify-end">
+          {clients.length === 0 && (
+            <button 
+              onClick={seedDatabase}
+              className="flex items-center px-4 py-2.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 rounded-xl font-medium text-sm hover:bg-indigo-200 transition-all"
+            >
+              <RotateCcw size={18} className="mr-2" />
+              Migrar Dados (Teste)
+            </button>
+          )}
           <button 
             onClick={() => setIsNotificationModalOpen(true)}
             className="flex items-center px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"

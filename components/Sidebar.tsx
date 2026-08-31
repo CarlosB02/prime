@@ -42,7 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen }) =>
           <Zap size={24} fill="white" />
         </div>
         <span className={`ml-3 font-bold text-xl tracking-tight ${isOpen ? 'block' : 'hidden xl:block'} bg-gradient-to-r from-slate-800 to-slate-500 dark:from-white dark:to-slate-400 bg-clip-text text-transparent`}>
-          Evolve
+          Prime
         </span>
       </div>
 
