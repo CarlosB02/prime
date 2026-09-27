@@ -23,27 +23,28 @@ import LoginView from './components/LoginView';
 
 const App: React.FC = () => {
   const [user, loading] = useAuthState(auth);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('pr1me_theme');
+    if (saved !== null) {
+      return saved === 'dark';
+    }
+    return true; // Default to dark mode
+  });
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Initial theme check
-  useEffect(() => {
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setIsDarkMode(true);
-    }
-  }, []);
-
-  // Update HTML class for Tailwind dark mode
+  // Update HTML class for Tailwind dark mode and sync storage
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('pr1me_theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('pr1me_theme', 'light');
     }
   }, [isDarkMode]);
 
-  const toggleTheme = () => setIsDarkMode(!isDarkMode);
+  const toggleTheme = () => setIsDarkMode(prev => !prev);
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   const getPageTitle = () => {
