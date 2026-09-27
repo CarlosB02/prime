@@ -219,9 +219,10 @@ const ContentView: React.FC = () => {
               return (
                 <div 
                     key={item.id} 
+                    onClick={() => !item.isDeleted && handleEdit(item)}
                     className={`
                     group grid grid-cols-12 gap-4 px-6 py-4 items-center transition-all duration-200 hover:bg-slate-50 dark:hover:bg-slate-800/50
-                    ${item.isDeleted ? 'opacity-60 grayscale' : ''}
+                    ${item.isDeleted ? 'opacity-60 grayscale' : 'cursor-pointer'}
                     `}
                 >
                     {/* ID */}
@@ -231,7 +232,7 @@ const ContentView: React.FC = () => {
 
                     {/* Thumbnail */}
                     <div className="col-span-2 sm:col-span-2 md:col-span-1 flex justify-center">
-                        <div className="w-16 aspect-video rounded-lg bg-slate-200 dark:bg-slate-700 overflow-hidden shadow-sm relative group-hover:scale-105 transition-transform cursor-pointer" onClick={() => handleView(item)}>
+                        <div className="w-16 aspect-video rounded-lg bg-slate-200 dark:bg-slate-700 overflow-hidden shadow-sm relative group-hover:scale-105 transition-transform">
                             <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
                             {item.type === 'video' && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-black/20">
@@ -246,9 +247,8 @@ const ContentView: React.FC = () => {
                     {/* Title & Info */}
                     <div className="col-span-5 sm:col-span-5 md:col-span-4">
                         <h3 
-                            className="font-bold text-slate-800 dark:text-white text-sm sm:text-base truncate pr-2 cursor-pointer hover:text-primary-500 transition-colors" 
+                            className="font-bold text-slate-800 dark:text-white text-sm sm:text-base truncate pr-2 transition-colors" 
                             title={item.title}
-                            onClick={() => handleView(item)}
                         >
                             {item.title}
                         </h3>
@@ -275,7 +275,7 @@ const ContentView: React.FC = () => {
                     {/* View Button (URL Replacement) */}
                     <div className="col-span-3 hidden md:flex justify-center">
                          <button 
-                            onClick={() => handleView(item)}
+                            onClick={(e) => { e.stopPropagation(); handleView(item); }}
                             className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow hover:border-primary-300 dark:hover:border-primary-700 transition-all group/btn"
                         >
                             <ActionIcon size={14} className="text-primary-500 group-hover/btn:scale-110 transition-transform" />
@@ -286,44 +286,44 @@ const ContentView: React.FC = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="col-span-4 sm:col-span-3 md:col-span-2 lg:col-span-1 flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="col-span-4 sm:col-span-3 md:col-span-2 lg:col-span-1 flex justify-end items-center gap-2">
                         {item.isDeleted ? (
                             <>
                                 <button 
-                                onClick={() => toggleDelete(item.id)}
+                                onClick={(e) => { e.stopPropagation(); toggleDelete(item.id); }}
                                 title="Restaurar"
-                                className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                                className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                                 >
-                                <RotateCcw size={18} />
+                                <RotateCcw size={16} />
                                 </button>
                                 <button 
-                                onClick={() => handleDeletePermanent(item.id)}
+                                onClick={(e) => { e.stopPropagation(); handleDeletePermanent(item.id); }}
                                 title="Eliminar Permanentemente"
-                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                 >
-                                <Trash2 size={18} />
+                                <Trash2 size={16} />
                                 </button>
                             </>
                         ) : (
                             <>
                                 <button 
-                                onClick={() => handleEdit(item)}
-                                className="p-2 text-slate-500 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                                onClick={(e) => { e.stopPropagation(); handleEdit(item); }}
+                                className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
                                 >
-                                <Edit2 size={18} />
+                                <Edit2 size={16} />
                                 </button>
                                 <button 
-                                onClick={() => toggleDelete(item.id)}
-                                className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                onClick={(e) => { e.stopPropagation(); toggleDelete(item.id); }}
+                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                 >
-                                <Trash2 size={18} />
+                                <Trash2 size={16} />
                                 </button>
                                 {/* Mobile View Button */}
                                 <button 
-                                  onClick={() => handleView(item)}
-                                  className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors md:hidden"
+                                  onClick={(e) => { e.stopPropagation(); handleView(item); }}
+                                  className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors md:hidden"
                                 >
-                                  <Eye size={18} />
+                                  <Eye size={16} />
                                 </button>
                             </>
                         )}

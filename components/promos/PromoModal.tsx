@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Tag, Percent, DollarSign, Calendar, Clock, Package, Check, RefreshCw } from 'lucide-react';
+import { X, Save, Tag, Percent, DollarSign, Clock, Package, Check, RefreshCw } from 'lucide-react';
 import { PromoCode, PromoType, PaymentPlan } from '../../types';
 import { MOCK_PLANS } from '../../constants';
 

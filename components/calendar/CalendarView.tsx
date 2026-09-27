@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, Filter, Clock, CheckCircle2, XCircle, AlertCircle, RefreshCw, FileText, User } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Filter, CheckCircle2, XCircle, RefreshCw, FileText, User } from 'lucide-react';
+import CustomCalendarIcon, { CustomCalendarIcon as CalendarIcon } from '../icons/CustomCalendarIcon';
+import { CustomClockIcon, CustomAlertCircleIcon } from '../icons';
 
 interface Session {
   id: string;
@@ -83,9 +85,9 @@ const CalendarView: React.FC = () => {
 
   const getStatusIcon = (status: Session['status']) => {
     switch (status) {
-      case 'agendada': return <Clock size={14} />;
+      case 'agendada': return <CustomClockIcon size={14} />;
       case 'concluida': return <CheckCircle2 size={14} />;
-      case 'nao_realizada': return <AlertCircle size={14} />;
+      case 'nao_realizada': return <CustomAlertCircleIcon size={14} />;
       case 'cancelada': return <XCircle size={14} />;
     }
   };
@@ -192,7 +194,7 @@ const CalendarView: React.FC = () => {
           <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 dark:bg-primary-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
             <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-              <Clock size={16} className="text-primary-500" /> Detalhe da Sessão
+              <CustomClockIcon size={16} /> Detalhe da Sessão
             </h3>
             
             {selectedSession ? (

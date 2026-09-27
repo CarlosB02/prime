@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { X, User, Activity, Dumbbell, Apple, CreditCard, MessageSquare, Edit2, Plus, Trash2, CheckCircle2, Calendar, Search } from 'lucide-react';
+import { X, User, Activity, Dumbbell, Apple, CreditCard, Edit2, Plus, Trash2, CheckCircle2, Search } from 'lucide-react';
+import CustomCalendarIcon from '../icons/CustomCalendarIcon';
+import { CustomChatIcon } from '../icons';
 import { Client } from '../../types';
 import SendNotificationModal from './SendNotificationModal';
 
@@ -96,7 +98,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
                           onClick={() => setIsMessageModalOpen(true)}
                           className="flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-600 hover:bg-primary-100 dark:bg-primary-900/20 dark:text-primary-400 dark:hover:bg-primary-900/40 rounded-xl transition-colors font-medium text-sm"
                         >
-                          <MessageSquare size={18} />
+                          <CustomChatIcon size={18} />
                           Enviar Mensagem
                         </button>
                         <button 
@@ -209,7 +211,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Atribuído a 15 Mar 2024</p>
                       </div>
                     </div>
-                    <button className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
+                    <button className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
                       <Trash2 size={18} />
                     </button>
                   </div>
@@ -241,7 +243,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Atribuído a 15 Mar 2024</p>
                       </div>
                     </div>
-                    <button className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
+                    <button className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
                       <Trash2 size={18} />
                     </button>
                   </div>
@@ -265,7 +267,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ isOpen, onClose
                   <div className="p-5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
                     <div className="flex items-center gap-3 mb-3">
                       <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
-                        <Calendar size={18} />
+                        <CustomCalendarIcon size={18} />
                       </div>
                       <h4 className="font-medium text-slate-600 dark:text-slate-300">Próximo Pagamento</h4>
                     </div>

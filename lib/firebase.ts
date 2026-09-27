@@ -1,19 +1,10 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import firebaseConfig from '../firebase-applet-config.json';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDv-iAD3fPhSg3B__h4GDmz7JfXSYrR9HI",
-  authDomain: "prime-87ad5.firebaseapp.com",
-  projectId: "prime-87ad5",
-  storageBucket: "prime-87ad5.firebasestorage.app",
-  messagingSenderId: "531288670073",
-  appId: "1:531288670073:web:9adb3fa311cf02956279a8",
-  measurementId: "G-SG6R5DB6HE"
-};
-
-export const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+export const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || undefined);
 export const auth = getAuth(app);
 
 export enum OperationType {

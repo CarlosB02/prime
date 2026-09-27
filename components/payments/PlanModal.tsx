@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, DollarSign, Calendar, RefreshCw, CreditCard, ShieldCheck, Check, Clock, CalendarDays, Lock } from 'lucide-react';
+import { X, Save, DollarSign, RefreshCw, CreditCard, ShieldCheck, Check, Clock, Lock } from 'lucide-react';
+import CustomCalendarIcon from '../icons/CustomCalendarIcon';
 import { PaymentPlan } from '../../types';
 
 interface PlanModalProps {
@@ -220,7 +221,7 @@ const PlanModal: React.FC<PlanModalProps> = ({ isOpen, onClose, onSave, initialD
                      <label className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${formData.allowInstallments ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700'}`}>
                         <div className="flex items-center gap-3">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${formData.allowInstallments ? 'bg-purple-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-400'}`}>
-                                <CalendarDays size={16} />
+                                <CustomCalendarIcon size={16} />
                             </div>
                             <div>
                                 <div className="text-sm font-semibold text-slate-800 dark:text-slate-200">Pagamentos Faseados</div>

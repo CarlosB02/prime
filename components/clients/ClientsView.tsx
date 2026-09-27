@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection, query, where, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../lib/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { 
@@ -28,15 +28,25 @@ import {
   ArrowDown,
   CheckCircle2,
   XCircle,
-  Calendar,
   MessageSquare
 } from 'lucide-react';
+import { 
+  CustomChatIcon, 
+  CustomUserCheckIcon, 
+  CustomUserPlusIcon, 
+  CustomUserMinusIcon, 
+  CustomClockIcon, 
+  CustomAlertCircleIcon, 
+  CustomGiftIcon,
+  CustomBellIcon
+} from '../icons';
 import { Client } from '../../types';
 import { MOCK_CLIENTS } from '../../constants';
 import SendNotificationModal from './SendNotificationModal';
 import QuickActionModal, { QuickActionModalType } from './QuickActionModal';
 import ClientDetailsView from './ClientDetailsView';
 import SendMessageModal from './SendMessageModal';
+import AddClientModal from './AddClientModal';
 
 type QuickFilterType = 
   | 'all'
@@ -52,19 +62,52 @@ type QuickFilterType =
 const ClientsView: React.FC = () => {
   const [user] = useAuthState(auth);
   
-  // Firebase Data
+  // Persistent local client state initialized with stored data or default MOCK_CLIENTS
+  const [localClients, setLocalClients] = useState<Client[]>(() => {
+    try {
+      const saved = localStorage.getItem('evolve_clients');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('Error reading clients from localStorage:', e);
+    }
+    return MOCK_CLIENTS;
+  });
+
+  const saveClients = (newClients: Client[]) => {
+    setLocalClients(newClients);
+    try {
+      localStorage.setItem('evolve_clients', JSON.stringify(newClients));
+    } catch (e) {
+      console.warn('Error saving clients to localStorage:', e);
+    }
+  };
+
+  // Optional Firestore sync
   const clientsRef = collection(db, 'clients');
-  // For the admins (Carlos and Renato), we can just fetch all clients in this private instance
-  const q = query(clientsRef);
-  const [firebaseClients, loading, error] = useCollectionData(q, { idField: 'id' });
-  
-  const clients = (firebaseClients as Client[]) || [];
+  const q = user ? query(clientsRef, where('ownerId', '==', user.uid)) : null;
+  const [firebaseClients] = useCollectionData(q);
+
+  // Merge firebase clients if available into clients list
+  const clients = useMemo(() => {
+    if (firebaseClients && firebaseClients.length > 0) {
+      const fbIds = new Set(firebaseClients.map(c => c.id));
+      const nonFb = localClients.filter(c => !fbIds.has(c.id));
+      return [...(firebaseClients as Client[]), ...nonFb];
+    }
+    return localClients;
+  }, [firebaseClients, localClients]);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [tableFilter, setTableFilter] = useState<string>('todos');
   const [quickFilter, setQuickFilter] = useState<QuickFilterType>('all');
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [quickActionModalType, setQuickActionModalType] = useState<QuickActionModalType>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null);
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
@@ -87,14 +130,14 @@ const ClientsView: React.FC = () => {
 
   const quickFilters = useMemo(() => {
     return [
-      { id: 'active', label: 'Ativos', icon: Activity, count: clients.filter(c => c.status === 'active').length, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
+      { id: 'active', label: 'Ativos', icon: CustomUserCheckIcon, count: clients.filter(c => c.status === 'active').length, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
       { id: 'evaluation_pending_validation', label: 'Avaliação por validar', icon: ClipboardCheck, count: clients.filter(c => c.evaluationStatus === 'por_validar').length, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-100 dark:bg-amber-900/30' },
-      { id: 'new_pending_validation', label: 'Novos por validar', icon: UserPlus, count: clients.filter(c => c.isNew && c.evaluationStatus === 'por_validar').length, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-100 dark:bg-blue-900/30' },
-      { id: 'evaluation_pending', label: 'Avaliação pendente', icon: Clock, count: clients.filter(c => c.evaluationStatus === 'pendente').length, color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-100 dark:bg-orange-900/30' },
-      { id: 'payment_expired', label: 'Pagamento expirado', icon: AlertCircle, count: clients.filter(c => c.paymentStatus === 'expirado').length, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-100 dark:bg-red-900/30' },
+      { id: 'new_pending_validation', label: 'Novos por validar', icon: CustomUserPlusIcon, count: clients.filter(c => c.isNew && c.evaluationStatus === 'por_validar').length, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-100 dark:bg-blue-900/30' },
+      { id: 'evaluation_pending', label: 'Avaliação pendente', icon: CustomClockIcon, count: clients.filter(c => c.evaluationStatus === 'pendente').length, color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-100 dark:bg-orange-900/30' },
+      { id: 'payment_expired', label: 'Pagamento expirado', icon: CustomAlertCircleIcon, count: clients.filter(c => c.paymentStatus === 'expirado').length, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-100 dark:bg-red-900/30' },
       { id: 'payment_expiring', label: 'Pagamento a expirar', icon: CreditCard, count: clients.filter(c => c.paymentStatus === 'a_expirar').length, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-100 dark:bg-rose-900/30' },
-      { id: 'birthday', label: 'Aniversariantes hoje', icon: Gift, count: clients.filter(c => c.birthday === todayStr).length, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-100 dark:bg-purple-900/30' },
-      { id: 'inactive_suspended', label: 'Inativos ou suspensos', icon: UserMinus, count: clients.filter(c => c.status === 'inactive' || c.status === 'warning').length, color: 'text-slate-600 dark:text-slate-400', bg: 'bg-slate-200 dark:bg-slate-800' },
+      { id: 'birthday', label: 'Aniversariantes hoje', icon: CustomGiftIcon, count: clients.filter(c => c.birthday === todayStr).length, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-100 dark:bg-purple-900/30' },
+      { id: 'inactive_suspended', label: 'Inativos ou suspensos', icon: CustomUserMinusIcon, count: clients.filter(c => c.status === 'inactive' || c.status === 'warning').length, color: 'text-slate-600 dark:text-slate-400', bg: 'bg-slate-200 dark:bg-slate-800' },
     ];
   }, [clients, todayStr]);
 
@@ -197,44 +240,148 @@ const ClientsView: React.FC = () => {
 
   const confirmDelete = async () => {
     if (clientToDelete && clientToDelete.id) {
-      try {
-        await deleteDoc(doc(db, 'clients', clientToDelete.id));
-        setClientToDelete(null);
-      } catch (e) {
-        console.error("Erro ao eliminar cliente:", e);
-        alert("Não foi possível eliminar o cliente.");
+      const toDeleteId = clientToDelete.id;
+      const updated = localClients.filter(c => c.id !== toDeleteId);
+      saveClients(updated);
+      setClientToDelete(null);
+
+      if (user) {
+        try {
+          await deleteDoc(doc(db, 'clients', toDeleteId));
+        } catch (e) {
+          console.warn("Firestore delete note:", e);
+        }
       }
     }
   };
 
   const confirmSuspend = async () => {
     if (clientToDelete && clientToDelete.id) {
-      try {
-        await updateDoc(doc(db, 'clients', clientToDelete.id), {
-          status: 'warning'
-        });
-        setClientToDelete(null);
-      } catch (e) {
-        console.error("Erro ao suspender cliente:", e);
-        alert("Não foi possível suspender o cliente.");
+      const toSuspendId = clientToDelete.id;
+      const updated = localClients.map(c => c.id === toSuspendId ? { ...c, status: 'warning' as const } : c);
+      saveClients(updated);
+      setClientToDelete(null);
+
+      if (user) {
+        try {
+          await updateDoc(doc(db, 'clients', toSuspendId), {
+            status: 'warning'
+          });
+        } catch (e) {
+          console.warn("Firestore suspend note:", e);
+        }
       }
     }
   };
 
-  // Temporary function to seed database if empty
-  const seedDatabase = async () => {
-    if (!user) return;
-    try {
-      for (const client of MOCK_CLIENTS) {
-        const clientData = { ...client, ownerId: user.uid, createdAt: new Date() };
-        // Remove the hardcoded ID so Firestore generates one
-        delete (clientData as any).id;
-        await addDoc(collection(db, 'clients'), clientData);
+  const handleAddClient = async (clientData: Partial<Client>) => {
+    const newId = String(Date.now());
+    const newClient: Client = {
+      id: newId,
+      name: clientData.name || 'Novo Cliente',
+      avatar: clientData.avatar || `https://picsum.photos/100/100?random=${Math.floor(Math.random() * 90) + 10}`,
+      plan: clientData.plan || 'Premium Transformation',
+      status: clientData.status || 'active',
+      lastActive: 'Agora',
+      contact: clientData.contact || '+351 900 000 000',
+      progress: clientData.progress || 0,
+      evaluationStatus: clientData.evaluationStatus || 'por_validar',
+      isNew: true,
+      paymentStatus: clientData.paymentStatus || 'pago',
+      birthday: clientData.birthday || '01-01',
+      age: clientData.age || 28,
+      paymentExpiryDate: clientData.paymentExpiryDate || '2026-12-31',
+      isPaying: clientData.isPaying ?? true,
+      hasSubscription: clientData.hasSubscription ?? true,
+      nextEvaluationDate: clientData.nextEvaluationDate || '2026-11-01',
+      ownerId: user?.uid || 'user_pt',
+      ...clientData
+    };
+
+    const updated = [newClient, ...localClients];
+    saveClients(updated);
+    setIsAddModalOpen(false);
+
+    if (user) {
+      try {
+        const cleanData = Object.fromEntries(
+          Object.entries({
+            ...newClient,
+            createdAt: serverTimestamp()
+          }).filter(([_, v]) => v !== undefined)
+        );
+        await addDoc(collection(db, 'clients'), cleanData);
+      } catch (e) {
+        console.warn("Firestore add client note:", e);
       }
-      alert("Clientes migrados com sucesso!");
-    } catch (e) {
-      console.error(e);
-      alert("Erro ao migrar clientes.");
+    }
+  };
+
+  const addFictionalClient = async () => {
+    const pool = [
+      { name: 'Ricardo Pereira', plan: 'Premium Transformation', age: 29, progress: 68, status: 'active' as const, evaluationStatus: 'concluida' as const },
+      { name: 'Mariana Costa', plan: 'Perda de Peso', age: 26, progress: 42, status: 'active' as const, evaluationStatus: 'por_validar' as const },
+      { name: 'Gonçalo Ramos', plan: 'Hipertrofia Basic', age: 24, progress: 80, status: 'active' as const, evaluationStatus: 'pendente' as const },
+      { name: 'Inês Ferreira', plan: 'Manutenção', age: 32, progress: 55, status: 'warning' as const, evaluationStatus: 'pendente' as const },
+      { name: 'Pedro Alves', plan: 'Premium Transformation', age: 35, progress: 73, status: 'active' as const, evaluationStatus: 'concluida' as const },
+      { name: 'Sara Matos', plan: 'Perda de Peso', age: 27, progress: 38, status: 'pending' as const, evaluationStatus: 'por_validar' as const },
+      { name: 'Tiago Santos', plan: 'Hipertrofia Basic', age: 31, progress: 60, status: 'active' as const, evaluationStatus: 'pendente' as const },
+      { name: 'Rita Oliveira', plan: 'Premium Transformation', age: 30, progress: 85, status: 'active' as const, evaluationStatus: 'concluida' as const }
+    ];
+
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    const randomAvatar = Math.floor(Math.random() * 90) + 10;
+    const newId = String(Date.now());
+
+    const mockClient: Client = {
+      id: newId,
+      name: pick.name,
+      avatar: `https://picsum.photos/100/100?random=${randomAvatar}`,
+      plan: pick.plan,
+      status: pick.status,
+      lastActive: 'Agora',
+      contact: `+351 91${Math.floor(1000000 + Math.random() * 9000000)}`,
+      progress: pick.progress,
+      evaluationStatus: pick.evaluationStatus,
+      isNew: true,
+      paymentStatus: 'pago',
+      birthday: '12-05',
+      age: pick.age,
+      paymentExpiryDate: '2026-12-31',
+      isPaying: true,
+      hasSubscription: true,
+      nextEvaluationDate: '2026-10-15',
+      ownerId: user?.uid || 'user_pt'
+    };
+
+    const updated = [mockClient, ...localClients];
+    saveClients(updated);
+
+    if (user) {
+      try {
+        await addDoc(collection(db, 'clients'), {
+          ...mockClient,
+          createdAt: serverTimestamp()
+        });
+      } catch (e) {
+        console.warn("Firestore fictional client note:", e);
+      }
+    }
+  };
+
+  // Function to seed or reset database
+  const seedDatabase = async () => {
+    saveClients(MOCK_CLIENTS);
+    if (user) {
+      try {
+        for (const client of MOCK_CLIENTS) {
+          const clientData = { ...client, ownerId: user.uid, createdAt: serverTimestamp() };
+          delete (clientData as any).id;
+          await addDoc(collection(db, 'clients'), clientData);
+        }
+      } catch (e) {
+        console.warn("Firestore seed note:", e);
+      }
     }
   };
 
@@ -269,6 +416,12 @@ const ClientsView: React.FC = () => {
 
         {/* Right: Actions */}
         <div className="flex gap-3 w-full md:w-auto justify-end">
+          <button 
+            onClick={addFictionalClient}
+            className="flex items-center px-4 py-2.5 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 rounded-xl font-medium text-sm hover:bg-amber-200 transition-all"
+          >
+            Adicionar Fictício
+          </button>
           {clients.length === 0 && (
             <button 
               onClick={seedDatabase}
@@ -282,10 +435,11 @@ const ClientsView: React.FC = () => {
             onClick={() => setIsNotificationModalOpen(true)}
             className="flex items-center px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
           >
-            <BellRing size={18} className="mr-2 text-primary-500" />
+            <CustomBellIcon size={18} className="mr-2" />
             Enviar Notificação
           </button>
           <button 
+            onClick={() => setIsAddModalOpen(true)}
             className="flex items-center px-5 py-2.5 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"
           >
             <Plus size={18} className="mr-2" />
@@ -375,28 +529,30 @@ const ClientsView: React.FC = () => {
       </div>
 
       {/* Table Filters */}
-      <div className="flex flex-wrap gap-2 pt-2">
-        {[
-          { id: 'todos', label: 'Todos' },
-          { id: 'ativos', label: 'Ativos' },
-          { id: 'atencao', label: 'Atenção' },
-          { id: 'renovacoes', label: 'Renovações' },
-          { id: 'sem_login', label: 'Sem Login' },
-          { id: 'novos', label: 'Novos' },
-          { id: 'aniversarios', label: 'Aniversários' }
-        ].map(filter => (
-          <button
-            key={filter.id}
-            onClick={() => setTableFilter(filter.id)}
-            className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-              tableFilter === filter.id
-                ? 'bg-primary-500 text-white shadow-md shadow-primary-500/20'
-                : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-primary-300 dark:hover:border-primary-700'
-            }`}
-          >
-            {filter.label}
-          </button>
-        ))}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-2">
+        <div className="flex flex-wrap bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl w-full">
+          {[
+            { id: 'todos', label: 'Todos' },
+            { id: 'ativos', label: 'Ativos' },
+            { id: 'atencao', label: 'Atenção' },
+            { id: 'renovacoes', label: 'Renovações' },
+            { id: 'sem_login', label: 'Sem Login' },
+            { id: 'novos', label: 'Novos' },
+            { id: 'aniversarios', label: 'Aniversários' }
+          ].map(filter => (
+            <button
+              key={filter.id}
+              onClick={() => setTableFilter(filter.id)}
+              className={`flex-1 sm:flex-none px-4 py-2 text-sm font-bold rounded-lg transition-all ${
+                tableFilter === filter.id
+                  ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Main Table */}
@@ -547,11 +703,14 @@ const ClientsView: React.FC = () => {
                         setMessageModalClient(client);
                       }}
                       className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors" title="Enviar Mensagem">
-                      <MessageSquare size={16} />
+                      <CustomChatIcon size={16} />
                     </button>
                     <button 
-                      onClick={(e) => e.stopPropagation()}
-                      className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors" title="Editar">
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedClient(client);
+                      }}
+                      className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors" title="Ver Detalhes / Editar">
                       <Edit2 size={16} />
                     </button>
                     <button 
@@ -591,6 +750,12 @@ const ClientsView: React.FC = () => {
           client={messageModalClient}
         />
       )}
+
+      <AddClientModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSave={handleAddClient}
+      />
 
       {/* Delete/Suspend Modal */}
       {clientToDelete && (

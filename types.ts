@@ -8,6 +8,9 @@ export interface Client {
   status: Status;
   lastActive: string;
   contact: string;
+  email?: string;
+  phone?: string;
+  gender?: string;
   progress: number;
   // New fields for quick filters
   evaluationStatus?: 'por_validar' | 'pendente' | 'concluida';
@@ -21,6 +24,8 @@ export interface Client {
   isPaying?: boolean;
   hasSubscription?: boolean;
   nextEvaluationDate?: string; // YYYY-MM-DD
+  ownerId?: string;
+  createdAt?: any;
 }
 
 export interface DashboardEvent {

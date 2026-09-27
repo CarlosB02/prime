@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { 
   Plus, Trash2, Edit2, Search, X, Utensils, Save, 
-  Settings, ChevronRight, Copy, MoreVertical, EyeOff, BookOpen, Calendar,
+  Settings, ChevronRight, Copy, MoreVertical, EyeOff, BookOpen,
   Bell, FileText, Check, ChevronDown, Activity, Trash, ArrowRightLeft
 } from 'lucide-react';
+import CustomCalendarIcon from '../icons/CustomCalendarIcon';
 
 export interface FoodItem {
   id: string;
@@ -69,10 +70,10 @@ type NutritionPlan = {
 
 const INITIAL_PLAN: NutritionPlan = {
   id: 'p1',
-  name: 'Plano Hipertrofia (Diogo)',
+  name: 'Novo Plano de Nutrição',
   notes: 'Foco no ganho de massa magra sem acumular muita gordura. Beber pelo menos 3L de água.',
-  startDate: '2026-07-01',
-  endDate: '2026-08-31',
+  startDate: '',
+  endDate: '',
   dayTypes: [
     {
       id: 'dt1',
@@ -238,7 +239,7 @@ const NutritionPlanBuilder: React.FC<NutritionPlanBuilderProps> = ({ planData, o
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 pl-11">
               <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 w-fit">
-                <Calendar size={14} className="text-slate-400"/>
+                <CustomCalendarIcon size={14}/>
                 <input type="date" value={plan.startDate} onChange={e => setPlan({...plan, startDate: e.target.value})} className="bg-transparent border-none p-0 text-sm focus:ring-0 text-slate-600 dark:text-slate-300 w-28 font-medium"/>
                 <span className="text-slate-400 text-xs">até</span>
                 <input type="date" value={plan.endDate} onChange={e => setPlan({...plan, endDate: e.target.value})} className="bg-transparent border-none p-0 text-sm focus:ring-0 text-slate-600 dark:text-slate-300 w-28 font-medium"/>
@@ -293,14 +294,13 @@ const NutritionPlanBuilder: React.FC<NutritionPlanBuilderProps> = ({ planData, o
                       key={dt.id} 
                       onClick={() => setActiveDayTypeIdx(idx)}
                       className={`p-3 rounded-xl border cursor-pointer transition-all group flex items-start justify-between
-                        ${activeDayTypeIdx === idx ? 'bg-white dark:bg-slate-800 border-primary-500 dark:border-primary-500 shadow-sm ring-1 ring-primary-500' : 'bg-transparent border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}
-                      `}
+                        ${activeDayTypeIdx === idx ? 'bg-white dark:bg-slate-800 border-primary-500 dark:border-primary-500 shadow-sm ring-1 ring-primary-500' : 'bg-transparent border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}
                     >
                       <div>
                         <h4 className={`font-bold text-sm ${activeDayTypeIdx === idx ? 'text-primary-700 dark:text-primary-400' : 'text-slate-700 dark:text-slate-300'}`}>{dt.name}</h4>
                         <p className="text-xs text-slate-500 mt-0.5">{dt.description}</p>
                       </div>
-                      <button className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-opacity"><MoreVertical size={16}/></button>
+                      <button className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-opacity"><MoreVertical size={16}/></button>
                     </div>
                   ))}
                 </div>
@@ -369,7 +369,7 @@ const NutritionPlanBuilder: React.FC<NutritionPlanBuilderProps> = ({ planData, o
         <div className="flex-1 bg-slate-100/50 dark:bg-[#0B1120] relative flex flex-col min-w-0">
            
            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8 pb-32">
-              <div className="max-w-5xl mx-auto space-y-8">
+              <div className="w-full space-y-8">
                 
                 {/* Day Header */}
                 <div className="mb-6 lg:mb-10 w-full flex items-center justify-between">
@@ -525,14 +525,14 @@ const NutritionPlanBuilder: React.FC<NutritionPlanBuilderProps> = ({ planData, o
                                                    <input type="number" defaultValue={f.quantity} className="w-16 text-right bg-transparent border-none p-1 font-bold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary-500 rounded"/>
                                                 </td>
                                                 <td className="px-4 py-3 text-center text-slate-500 dark:text-slate-400 font-medium text-xs">
-                                                   {f.measure || `${f.quantity}${m.baseUnit}`}
+                                                   {f.measure ||`${f.quantity}${m.baseUnit}`}
                                                 </td>
                                                 <td className="px-4 py-3 text-right font-medium text-slate-600 dark:text-slate-300">{m.prot.toFixed(1)}</td>
                                                 <td className="px-4 py-3 text-right font-medium text-slate-600 dark:text-slate-300">{m.carbs.toFixed(1)}</td>
                                                 <td className="px-4 py-3 text-right font-medium text-slate-600 dark:text-slate-300">{m.fat.toFixed(1)}</td>
                                                 <td className="px-4 py-3 text-right font-black text-primary-600 dark:text-primary-400">{m.kcal.toFixed(0)}</td>
                                                 <td className="px-4 py-3 text-right">
-                                                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                   <div className="flex items-center justify-end gap-1">
                                                       <button className="p-1.5 text-slate-400 hover:text-primary-600 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700" title="Editar"><Edit2 size={14}/></button>
                                                       <button className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-md hover:bg-slate-100 dark:hover:bg-slate-700" title="Exibir/Adicionar Substitutos"><ArrowRightLeft size={14}/></button>
                                                       <button className="p-1.5 text-slate-400 hover:text-primary-600 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700" title="Copiar"><Copy size={14}/></button>
@@ -553,14 +553,14 @@ const NutritionPlanBuilder: React.FC<NutritionPlanBuilderProps> = ({ planData, o
                                                        <input type="number" defaultValue={sub.quantity} className="w-16 text-right bg-transparent border-none p-1 text-sm font-bold text-slate-600 dark:text-slate-400 focus:ring-2 focus:ring-primary-500 rounded"/>
                                                     </td>
                                                     <td className="px-4 py-2 text-center text-slate-500 dark:text-slate-400 font-medium text-xs">
-                                                      {sub.measure || `${sub.quantity}${subM.baseUnit}`}
+                                                      {sub.measure ||`${sub.quantity}${subM.baseUnit}`}
                                                     </td>
                                                     <td className="px-4 py-2 text-right text-xs text-slate-500">{subM.prot.toFixed(1)}</td>
                                                     <td className="px-4 py-2 text-right text-xs text-slate-500">{subM.carbs.toFixed(1)}</td>
                                                     <td className="px-4 py-2 text-right text-xs text-slate-500">{subM.fat.toFixed(1)}</td>
                                                     <td className="px-4 py-2 text-right text-xs text-slate-500">{subM.kcal.toFixed(0)}</td>
                                                     <td className="px-4 py-2 text-right">
-                                                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                      <div className="flex items-center justify-end gap-1">
                                                         <button className="p-1 text-slate-400 hover:text-rose-500 rounded"><Trash size={12}/></button>
                                                       </div>
                                                     </td>
@@ -600,7 +600,7 @@ const NutritionPlanBuilder: React.FC<NutritionPlanBuilderProps> = ({ planData, o
            
            {/* 4. BARRA INFERIOR FIXA */}
            <div className="absolute bottom-0 left-0 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 p-4 z-30">
-              <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4">
                  <div className="flex items-center gap-4">
                    <h3 className="font-bold text-sm tracking-widest text-slate-500 dark:text-slate-400 uppercase hidden md:block">TOTAIS ({activeDayType?.name})</h3>
                  </div>

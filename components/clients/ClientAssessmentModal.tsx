@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { X, Calendar, Camera, FileText, MessageSquare, History, Plus, Image as ImageIcon } from 'lucide-react';
+import { X, Camera, FileText, History, Plus, Image as ImageIcon } from 'lucide-react';
+import CustomCalendarIcon from '../icons/CustomCalendarIcon';
+import { CustomChatIcon } from '../icons';
 import { Photo, PhotoComparison } from './ClientPhotosTab';
 
 export interface AssessmentData {
@@ -131,7 +133,7 @@ export const ClientAssessmentModal: React.FC<ClientAssessmentModalProps> = ({
           <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
-                <Calendar size={16} className="text-blue-500"/> Data da Avaliação
+                <CustomCalendarIcon size={16} /> Data da Avaliação
               </h3>
               <input 
                 type="date" 
@@ -241,7 +243,7 @@ export const ClientAssessmentModal: React.FC<ClientAssessmentModalProps> = ({
           {/* Perguntas */}
           <section>
             <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
-              <MessageSquare size={16} className="text-amber-500"/> Perguntas (Submetidas pelo cliente)
+              <CustomChatIcon size={16} className="text-amber-500"/> Perguntas (Submetidas pelo cliente)
             </h3>
             <textarea
               value={questions}
@@ -256,7 +258,7 @@ export const ClientAssessmentModal: React.FC<ClientAssessmentModalProps> = ({
           {/* Feedback do Treinador */}
           <section>
             <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
-              <MessageSquare size={16} className="text-emerald-500"/> Feedback do Treinador
+              <CustomChatIcon size={16} className="text-emerald-500"/> Feedback do Treinador
             </h3>
             <textarea
               value={trainerFeedback}

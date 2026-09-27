@@ -121,9 +121,9 @@ const PromosView: React.FC = () => {
 
   const getFormattedValue = (promo: PromoCode) => {
       switch(promo.type) {
-          case 'percent': return `${promo.value}%`;
-          case 'fixed_amount': return `-€${promo.value}`;
-          case 'fixed_price': return `= €${promo.value}`;
+          case 'percent': return`${promo.value}%`;
+          case 'fixed_amount': return`-€${promo.value}`;
+          case 'fixed_price': return`= €${promo.value}`;
       }
   };
 
@@ -159,12 +159,10 @@ const PromosView: React.FC = () => {
         <div className="flex gap-3 w-full md:w-auto justify-end">
           <button 
             onClick={() => setShowDeleted(!showDeleted)}
-            className={`
-              flex items-center justify-center px-4 py-2.5 rounded-xl border text-sm font-medium transition-all
+            className={`flex items-center justify-center px-4 py-2.5 rounded-xl border text-sm font-medium transition-all
               ${showDeleted 
                 ? 'bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400' 
-                : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-400'}
-            `}
+                : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-400'}`}
           >
             <Trash2 size={16} />
           </button>
@@ -214,10 +212,9 @@ const PromosView: React.FC = () => {
                 return (
                   <div 
                     key={promo.id} 
-                    className={`
-                      group grid grid-cols-12 gap-4 px-6 py-4 items-center transition-all duration-200 hover:bg-slate-50 dark:hover:bg-slate-800/50
-                      ${promo.isDeleted ? 'opacity-60 grayscale' : ''}
-                    `}
+                    onClick={() => !promo.isDeleted && handleEdit(promo)}
+                    className={`group grid grid-cols-12 gap-4 px-6 py-4 items-center transition-all duration-200 hover:bg-slate-50 dark:hover:bg-slate-800/50
+                      ${promo.isDeleted ? 'opacity-60 grayscale' : 'cursor-pointer'}`}
                   >
                     {/* 1. Date */}
                     <div className="col-span-1 hidden xl:block text-xs text-slate-500 font-mono">
@@ -270,7 +267,7 @@ const PromosView: React.FC = () => {
                         <button 
                             onClick={() => setViewingPlansId(promo.planIds)}
                             className={`p-2 rounded-full transition-colors ${promo.planIds.length > 0 ? 'text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20' : 'text-slate-300 dark:text-slate-600'}`}
-                            title={promo.planIds.length > 0 ? `${promo.planIds.length} packs associados` : 'Todos os packs'}
+                            title={promo.planIds.length > 0 ?`${promo.planIds.length} packs associados`: 'Todos os packs'}
                         >
                             <Package size={18} />
                         </button>
@@ -289,7 +286,7 @@ const PromosView: React.FC = () => {
                         <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-1.5">
                             <div 
                                 className={`h-full rounded-full transition-all duration-500 ${depleted ? 'bg-red-500' : 'bg-primary-500'}`} 
-                                style={{ width: `${usagePercent}%` }} 
+                                style={{ width:`${usagePercent}%`}} 
                             />
                         </div>
                         <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
@@ -310,13 +307,13 @@ const PromosView: React.FC = () => {
                     <div className="col-span-4 sm:col-span-2 md:col-span-3 lg:col-span-2 xl:col-span-1 flex justify-end items-center gap-2">
                         {promo.isDeleted ? (
                             <>
-                                <button onClick={() => toggleDelete(promo.id)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><RotateCcw size={18} /></button>
-                                <button onClick={() => handleDeletePermanent(promo.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
+                                <button onClick={(e) => { e.stopPropagation(); toggleDelete(promo.id); }} className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><RotateCcw size={16} /></button>
+                                <button onClick={(e) => { e.stopPropagation(); handleDeletePermanent(promo.id); }} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button>
                             </>
                         ) : (
                             <>
-                                <button onClick={() => handleEdit(promo)} className="p-2 text-slate-500 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"><Edit2 size={18} /></button>
-                                <button onClick={() => toggleDelete(promo.id)} className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"><Trash2 size={18} /></button>
+                                <button onClick={(e) => { e.stopPropagation(); handleEdit(promo); }} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"><Edit2 size={16} /></button>
+                                <button onClick={() => toggleDelete(promo.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"><Trash2 size={16} /></button>
                             </>
                         )}
                     </div>

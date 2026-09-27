@@ -155,7 +155,8 @@ const QuestionnairesView: React.FC = () => {
             filteredQuestionnaires.map((item) => (
               <div 
                 key={item.id} 
-                className={`grid grid-cols-12 gap-4 px-6 py-4 items-center transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/50 ${item.isDeleted ? 'opacity-60 grayscale' : ''}`}
+                onClick={() => !item.isDeleted && handleEdit(item)}
+                className={`grid grid-cols-12 gap-4 px-6 py-4 items-center transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/50 ${item.isDeleted ? 'opacity-60 grayscale' : 'cursor-pointer'}`}
               >
                 <div className="col-span-6 md:col-span-4 lg:col-span-3">
                   <div className="flex items-center gap-3">
@@ -189,35 +190,35 @@ const QuestionnairesView: React.FC = () => {
                   {item.isDeleted ? (
                     <>
                       <button 
-                        onClick={() => toggleDelete(item.id)}
+                        onClick={(e) => { e.stopPropagation(); toggleDelete(item.id); }}
                         className="p-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors"
                         title="Restaurar"
                       >
-                        <RotateCcw size={18} />
+                        <RotateCcw size={16} />
                       </button>
                       <button 
-                        onClick={() => handleDeletePermanent(item.id)}
+                        onClick={(e) => { e.stopPropagation(); handleDeletePermanent(item.id); }}
                         className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                         title="Eliminar Permanentemente"
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={16} />
                       </button>
                     </>
                   ) : (
                     <>
                       <button 
-                        onClick={() => handleEdit(item)}
+                        onClick={(e) => { e.stopPropagation(); handleEdit(item); }}
                         className="p-2 text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
                         title="Editar"
                       >
-                        <Edit2 size={18} />
+                        <Edit2 size={16} />
                       </button>
                       <button 
                         onClick={() => toggleDelete(item.id)}
                         className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                         title="Eliminar"
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={16} />
                       </button>
                     </>
                   )}

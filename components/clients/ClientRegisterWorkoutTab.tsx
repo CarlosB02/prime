@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Search, Plus, Calendar, Clock, Activity, Dumbbell, History, ChevronRight, Eye, Play, PlusCircle, AlignLeft, CheckCircle2, Timer, RefreshCw, X, Image as ImageIcon } from 'lucide-react';
+import { Search, Plus, Clock, Activity, Dumbbell, History, ChevronRight, Eye, Play, PlusCircle, AlignLeft, CheckCircle2, Timer, RefreshCw, X, Image as ImageIcon } from 'lucide-react';
+import CustomCalendarIcon from '../icons/CustomCalendarIcon';
 import { Client } from '../../types';
 import { TimerModal } from './TimerModal';
 import { ExerciseHistoryModal } from './ExerciseHistoryModal';
@@ -203,7 +204,7 @@ export const ClientRegisterWorkoutTab: React.FC<ClientRegisterWorkoutTabProps> =
                     <div>
                       <h4 className="font-bold text-slate-800 dark:text-white mb-2">{plan.name}</h4>
                       <div className="flex items-center gap-4 text-xs text-slate-500">
-                        <span className="flex items-center gap-1.5"><Calendar size={14} className="text-slate-400" /> {plan.date}</span>
+                        <span className="flex items-center gap-1.5"><CustomCalendarIcon size={14} /> {plan.date}</span>
                         <span className="flex items-center gap-1.5"><Dumbbell size={14} className="text-slate-400" /> {plan.workoutsCount} treinos</span>
                       </div>
                     </div>

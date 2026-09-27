@@ -1,5 +1,6 @@
 import React from 'react';
-import { X, ExternalLink, Calendar, Tag, FileText, Video, PlayCircle } from 'lucide-react';
+import { X, ExternalLink, Tag, FileText, Video, PlayCircle } from 'lucide-react';
+import CustomCalendarIcon from '../icons/CustomCalendarIcon';
 import { ContentItem } from '../../types';
 
 interface ContentDetailModalProps {
@@ -95,7 +96,7 @@ const ContentDetailModal: React.FC<ContentDetailModalProps> = ({ isOpen, onClose
                     <Tag size={12} /> {content.category}
                  </span>
                  <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-slate-500 dark:text-slate-400">
-                    <Calendar size={12} /> {content.createdAt}
+                    <CustomCalendarIcon size={12} /> {content.createdAt}
                  </span>
              </div>
 

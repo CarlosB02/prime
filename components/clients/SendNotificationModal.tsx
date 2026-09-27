@@ -5,14 +5,13 @@ import {
   Users, 
   Search, 
   Filter, 
-  MessageSquare, 
-  BellRing, 
   Check, 
   ChevronDown,
   Wand2,
   Save,
   Plus
 } from 'lucide-react';
+import { CustomBellIcon, CustomChatIcon } from '../icons';
 import { Client } from '../../types';
 
 interface SendNotificationModalProps {
@@ -310,7 +309,7 @@ const SendNotificationModal: React.FC<SendNotificationModalProps> = ({ isOpen, o
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                   }`}
                 >
-                  <BellRing size={16} />
+                  <CustomBellIcon size={16} />
                   Push Notification
                 </button>
                 <button
@@ -322,7 +321,7 @@ const SendNotificationModal: React.FC<SendNotificationModalProps> = ({ isOpen, o
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                   }`}
                 >
-                  <MessageSquare size={16} />
+                  <CustomChatIcon size={16} />
                   Mensagem no Chat
                 </button>
               </div>

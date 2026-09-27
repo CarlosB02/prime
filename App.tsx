@@ -65,13 +65,21 @@ const App: React.FC = () => {
       case 'questionnaires': return 'Questionários';
       case 'notifications': return 'Notificações';
       case 'automations': return 'Automações';
-      default: return 'Evolve Pro';
+      default: return 'pr1me';
     }
   };
 
   const renderContent = () => {
     switch(activeTab) {
-      case 'dashboard': return <DashboardView />;
+      case 'dashboard': return <DashboardView onNavigate={(view, id) => {
+        const tabMap: Record<string, string> = {
+          'new-client': 'clients',
+          'community': 'dashboard',
+          'community-create': 'dashboard',
+          'messages': 'dashboard' // we don't have a standalone messages tab yet
+        };
+        setActiveTab(tabMap[view] || view);
+      }} />;
       case 'calendar': return <CalendarView />;
       case 'clients': return <ClientsView />;
       case 'finance': return <FinanceView />;
@@ -147,18 +155,19 @@ const App: React.FC = () => {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col h-full relative z-10 lg:ml-20 xl:ml-64 transition-all duration-300">
+      <div className="flex-1 min-w-0 flex flex-col h-full relative z-10 lg:ml-20 xl:ml-64 transition-all duration-300">
         
         <Header 
           isDarkMode={isDarkMode} 
           toggleTheme={toggleTheme} 
           toggleSidebar={toggleSidebar}
           title={getPageTitle()}
+          onNotificationsClick={() => setActiveTab('notifications')}
         />
 
         {/* Scrollable Content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 scroll-smooth">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 2xl:p-10 scroll-smooth w-full">
+          <div className="w-full min-w-0">
             {renderContent()}
           </div>
         </main>

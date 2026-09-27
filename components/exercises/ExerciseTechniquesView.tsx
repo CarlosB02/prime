@@ -99,7 +99,7 @@ const ExerciseTechniquesView: React.FC = () => {
         <div className="divide-y divide-slate-100 dark:divide-slate-800 bg-white/50 dark:bg-slate-900/30">
           {filteredTechniques.length > 0 ? (
             filteredTechniques.map((technique) => (
-              <div key={technique.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer">
+              <div key={technique.id} onClick={() => handleEdit(technique)} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group cursor-pointer">
                 
                 <div className="col-span-1 hidden md:block text-center">
                   <span className="text-xs font-mono text-slate-400">#{technique.id}</span>
@@ -138,18 +138,18 @@ const ExerciseTechniquesView: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="col-span-5 sm:col-span-3 md:col-span-3 flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="col-span-5 sm:col-span-3 md:col-span-3 flex items-center justify-end gap-2">
                   <button 
-                    onClick={() => handleEdit(technique)}
+                    onClick={(e) => { e.stopPropagation(); handleEdit(technique); }}
                     className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
                   >
-                    <Edit2 size={18} />
+                    <Edit2 size={16} />
                   </button>
                   <button 
-                    onClick={() => handleDelete(technique.id)}
+                    onClick={(e) => { e.stopPropagation(); handleDelete(technique.id); }}
                     className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
                   >
-                    <Trash2 size={18} />
+                    <Trash2 size={16} />
                   </button>
                 </div>
               </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Calendar, Layers, Clock } from 'lucide-react';
+import { X, Save, Layers, Clock } from 'lucide-react';
+import CustomCalendarIcon from '../icons/CustomCalendarIcon';
 
 interface WorkoutPlanModalProps {
   isOpen: boolean;
@@ -113,7 +114,9 @@ const WorkoutPlanModal: React.FC<WorkoutPlanModalProps> = ({ isOpen, onClose, on
                             Data de Início
                           </label>
                           <div className="relative">
-                            <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+                              <CustomCalendarIcon size={14} />
+                            </span>
                             <input
                               type="date"
                               value={startDate}
@@ -127,7 +130,9 @@ const WorkoutPlanModal: React.FC<WorkoutPlanModalProps> = ({ isOpen, onClose, on
                             Data de Término
                           </label>
                           <div className="relative">
-                            <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+                              <CustomCalendarIcon size={14} />
+                            </span>
                             <input
                               type="date"
                               value={endDate}

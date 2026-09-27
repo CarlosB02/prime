@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MENU_ITEMS } from '../constants';
 import { LogOut, Zap, ChevronDown } from 'lucide-react';
+import { Pr1meLogo } from './icons';
 
 interface SidebarProps {
   activeTab: string;
@@ -37,12 +38,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpen }) =>
       `}
     >
       {/* Logo Area */}
-      <div className="flex items-center justify-center xl:justify-start xl:px-8 mb-8 shrink-0">
-        <div className="w-10 h-10 bg-gradient-to-tr from-primary-600 to-primary-400 rounded-xl shadow-lg shadow-primary-500/30 flex items-center justify-center text-white font-bold text-xl shrink-0">
-          <Zap size={24} fill="white" />
+      <div className="flex items-center justify-center xl:justify-start xl:px-6 mb-8 shrink-0">
+        <div className="w-10 h-10 flex items-center justify-center shrink-0 transition-transform duration-300 hover:scale-105">
+          <Pr1meLogo size={36} className="drop-shadow-[0_0_12px_rgba(0,212,255,0.45)]" />
         </div>
-        <span className={`ml-3 font-bold text-xl tracking-tight ${isOpen ? 'block' : 'hidden xl:block'} bg-gradient-to-r from-slate-800 to-slate-500 dark:from-white dark:to-slate-400 bg-clip-text text-transparent`}>
-          Prime
+        <span className={`ml-3 font-black text-2xl tracking-tight lowercase ${isOpen ? 'block' : 'hidden xl:block'} bg-gradient-to-r from-sky-400 via-cyan-300 to-blue-500 bg-clip-text text-transparent font-sans drop-shadow-sm`}>
+          pr1me
         </span>
       </div>
 

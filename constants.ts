@@ -14,17 +14,26 @@ import {
   HelpCircle,
   Wallet,
   Apple,
-  Settings,
-  Calendar
+  Settings
 } from 'lucide-react';
+import CustomCalendarIcon from './components/icons/CustomCalendarIcon';
+import CustomDashboardIcon from './components/icons/CustomDashboardIcon';
+import CustomUsersIcon from './components/icons/CustomUsersIcon';
+import CustomWalletIcon from './components/icons/CustomWalletIcon';
+import CustomDumbbellIcon from './components/icons/CustomDumbbellIcon';
+import CustomAppleIcon from './components/icons/CustomAppleIcon';
+import CustomForkKnifeIcon from './components/icons/CustomForkKnifeIcon';
+import CustomClipboardIcon from './components/icons/CustomClipboardIcon';
+import CustomBellIcon from './components/icons/CustomBellIcon';
+import { CustomVitalIcon, CustomQuestionMarkIcon, CustomSettingsIcon } from './components/icons';
 
 export const MENU_ITEMS = [
-  { label: 'Dashboard', icon: LayoutDashboard, id: 'dashboard' },
-  { label: 'Calendário', icon: Calendar, id: 'calendar' },
-  { label: 'Clientes', icon: Users, id: 'clients' },
+  { label: 'Dashboard', icon: CustomDashboardIcon, id: 'dashboard' },
+  { label: 'Calendário', icon: CustomCalendarIcon, id: 'calendar' },
+  { label: 'Clientes', icon: CustomUsersIcon, id: 'clients' },
   { 
     label: 'Negócio', 
-    icon: Wallet, 
+    icon: CustomWalletIcon, 
     id: 'business_group',
     subItems: [
       { label: 'Financeiro', id: 'finance' },
@@ -32,33 +41,33 @@ export const MENU_ITEMS = [
       { label: 'Códigos Promo', id: 'promos' }
     ]
   },
-  { label: 'Equipa', icon: Users, id: 'team' },
-  { label: 'Planos de Treino', icon: Dumbbell, id: 'workouts' },
+  { label: 'Equipa', icon: CustomUsersIcon, id: 'team' },
+  { label: 'Planos de Treino', icon: CustomDumbbellIcon, id: 'workouts' },
   { 
     label: 'Alimentos e Suplementação', 
-    icon: Apple, 
+    icon: CustomAppleIcon, 
     id: 'nutrition_group',
     subItems: [
       { label: 'Alimentos', id: 'nutrition' },
       { label: 'Suplementação', id: 'supplements' }
     ]
   },
-  { label: 'Planos de Nutrição', icon: Utensils, id: 'nutrition_plans' },
+  { label: 'Planos de Nutrição', icon: CustomForkKnifeIcon, id: 'nutrition_plans' },
   { 
     label: 'Exercícios', 
-    icon: Activity, 
+    icon: CustomVitalIcon, 
     id: 'exercises_group',
     subItems: [
       { label: 'Exercícios', id: 'exercises' },
       { label: 'Técnica de Exercícios', id: 'exercise_techniques' }
     ]
   },
-  { label: 'Conteúdos', icon: FileText, id: 'content' },
-  { label: 'Questionários', icon: HelpCircle, id: 'questionnaires' },
-  { label: 'Notificações', icon: Bell, id: 'notifications' },
+  { label: 'Conteúdos', icon: CustomClipboardIcon, id: 'content' },
+  { label: 'Questionários', icon: CustomQuestionMarkIcon, id: 'questionnaires' },
+  { label: 'Notificações', icon: CustomBellIcon, id: 'notifications' },
   {
     label: 'Definições',
-    icon: Settings,
+    icon: CustomSettingsIcon,
     id: 'settings_group',
     subItems: [
       { label: 'Automações', id: 'automations' }

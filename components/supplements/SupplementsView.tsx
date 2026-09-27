@@ -126,12 +126,10 @@ const SupplementsView: React.FC = () => {
         <div className="flex gap-3 w-full md:w-auto justify-end">
           <button 
             onClick={() => setShowDeleted(!showDeleted)}
-            className={`
-              flex items-center justify-center px-4 py-2.5 rounded-xl border text-sm font-medium transition-all
+            className={`flex items-center justify-center px-4 py-2.5 rounded-xl border text-sm font-medium transition-all
               ${showDeleted 
                 ? 'bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400' 
-                : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-400'}
-            `}
+                : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-400'}`}
           >
             <Trash2 size={16} />
           </button>
@@ -173,10 +171,9 @@ const SupplementsView: React.FC = () => {
             filteredSupplements.map((supp) => (
               <div 
                 key={supp.id} 
-                className={`
-                  group grid grid-cols-12 gap-4 px-6 py-4 items-center transition-all duration-200 hover:bg-slate-50 dark:hover:bg-slate-800/50
-                  ${supp.isDeleted ? 'opacity-60 grayscale' : ''}
-                `}
+                onClick={() => !supp.isDeleted && handleEdit(supp)}
+                className={`group grid grid-cols-12 gap-4 px-6 py-4 items-center transition-all duration-200 hover:bg-slate-50 dark:hover:bg-slate-800/50
+                  ${supp.isDeleted ? 'opacity-60 grayscale' : 'cursor-pointer'}`}
               >
                 {/* ID */}
                 <div className="col-span-1 hidden md:block text-center">
@@ -226,42 +223,42 @@ const SupplementsView: React.FC = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="col-span-4 sm:col-span-3 md:col-span-2 lg:col-span-1 flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="col-span-4 sm:col-span-3 md:col-span-2 lg:col-span-1 flex justify-end items-center gap-2">
                    {supp.isDeleted ? (
                      <>
                         <button 
-                          onClick={() => toggleDelete(supp.id)}
+                          onClick={(e) => { e.stopPropagation(); toggleDelete(supp.id); }}
                           title="Restaurar"
-                          className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                          className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                         >
-                          <RotateCcw size={18} />
+                          <RotateCcw size={16} />
                         </button>
                         <button 
-                          onClick={() => handleDeletePermanent(supp.id)}
+                          onClick={(e) => { e.stopPropagation(); handleDeletePermanent(supp.id); }}
                           title="Eliminar Permanentemente"
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} />
                         </button>
                      </>
                    ) : (
                      <>
                         <button 
-                          onClick={() => handleEdit(supp)}
-                          className="p-2 text-slate-500 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                          onClick={(e) => { e.stopPropagation(); handleEdit(supp); }}
+                          className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
                         >
-                          <Edit2 size={18} />
+                          <Edit2 size={16} />
                         </button>
                         <button 
                           onClick={() => toggleDelete(supp.id)}
-                          className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} />
                         </button>
                         {/* Mobile View Product Button - Visible only on small screens via CSS/Logic */}
                         <button 
                           onClick={() => handleViewProduct(supp)}
-                          className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors lg:hidden"
+                          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors lg:hidden"
                         >
                           <ExternalLink size={18} />
                         </button>

@@ -2,11 +2,8 @@ import React, { useState } from 'react';
 import { 
   Search, 
   Plus, 
-  Apple, // Replaced Dumbbell with Apple for nutrition
   Filter,
   MoreVertical,
-  Calendar,
-  Clock,
   Layers,
   Edit2,
   Trash2,
@@ -15,6 +12,8 @@ import {
   ArrowDownUp,
   List
 } from 'lucide-react';
+import CustomCalendarIcon from '../icons/CustomCalendarIcon';
+import { CustomAppleIcon, CustomClockIcon } from '../icons';
 import NutritionPlanBuilder from './../nutrition_plans/NutritionPlanBuilder';
 
 interface NutritionPlan {
@@ -117,18 +116,18 @@ export const ClientNutritionTab: React.FC = () => {
 
   const renderPlanCard = (plan: NutritionPlan) => {
     return (
-      <div key={plan.id} className="glass-card rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:border-primary-500/50 dark:hover:border-primary-500/50 transition-all group flex flex-col h-full">
+      <div key={plan.id} onClick={(e) => { e.stopPropagation(); handleEdit(plan); }} className="glass-card rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:border-primary-500/50 dark:hover:border-primary-500/50 transition-all group flex flex-col h-full cursor-pointer">
         {/* Card Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400">
-            <Apple size={24} />
+            <CustomAppleIcon size={24} />
           </div>
           
           <div className="flex items-center gap-1">
-            <button onClick={() => handleEdit(plan)} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
+            <button onClick={(e) => { e.stopPropagation(); handleEdit(plan); }} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
               <Edit2 size={16} />
             </button>
-            <button onClick={() => handleDelete(plan.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
+            <button onClick={(e) => { e.stopPropagation(); handleDelete(plan.id); }} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
               <Trash2 size={16} />
             </button>
           </div>
@@ -147,7 +146,7 @@ export const ClientNutritionTab: React.FC = () => {
           <div className="flex flex-col gap-2 mt-4">
             {(plan.startDate || plan.endDate) && (
               <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                <Calendar size={14} className="text-slate-400" />
+                <CustomCalendarIcon size={14} />
                 <span>
                   {plan.startDate ? new Date(plan.startDate).toLocaleDateString('pt-PT') : 'N/A'} - 
                   {plan.endDate ? new Date(plan.endDate).toLocaleDateString('pt-PT') : 'Atual'}
@@ -155,7 +154,7 @@ export const ClientNutritionTab: React.FC = () => {
               </div>
             )}
             <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-              <Clock size={14} className="text-slate-400" />
+              <CustomClockIcon size={14} />
               <span>Criado a {new Date(plan.createdAt).toLocaleDateString('pt-PT')}</span>
             </div>
           </div>
@@ -167,10 +166,10 @@ export const ClientNutritionTab: React.FC = () => {
 
   const renderCompactPlanRow = (plan: NutritionPlan) => {
     return (
-      <div key={plan.id} className="flex items-center justify-between p-4 glass-panel border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors opacity-80">
+      <div key={plan.id} onClick={(e) => { e.stopPropagation(); handleEdit(plan); }} className="flex items-center justify-between p-4 glass-panel border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors opacity-80 cursor-pointer">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0">
-            <Apple size={20} />
+            <CustomAppleIcon size={20} />
           </div>
           <div>
             <h3 className="font-semibold text-slate-800 dark:text-slate-200">{plan.name}</h3>
@@ -180,7 +179,7 @@ export const ClientNutritionTab: React.FC = () => {
               </span>
               {plan.startDate && plan.endDate && (
                 <span className="flex items-center gap-1">
-                  <Calendar size={12} />
+                  <CustomCalendarIcon size={12} />
                   {new Date(plan.startDate).toLocaleDateString('pt-PT')} - {new Date(plan.endDate).toLocaleDateString('pt-PT')}
                 </span>
               )}
@@ -189,10 +188,10 @@ export const ClientNutritionTab: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-1">
-          <button onClick={() => handleEdit(plan)} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
+          <button onClick={(e) => { e.stopPropagation(); handleEdit(plan); }} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
             <Edit2 size={16} />
           </button>
-          <button onClick={() => handleDelete(plan.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
+          <button onClick={(e) => { e.stopPropagation(); handleDelete(plan.id); }} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
             <Trash2 size={16} />
           </button>
         </div>
@@ -243,7 +242,7 @@ export const ClientNutritionTab: React.FC = () => {
       {filteredPlans.length === 0 ? (
         <div className="glass-panel border border-slate-200 dark:border-slate-800 rounded-2xl p-12 flex flex-col items-center justify-center text-center">
           <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-             <Apple size={32} className="text-slate-400" />
+             <CustomAppleIcon size={32} />
           </div>
           <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">Sem planos de nutrição</h3>
           <p className="text-slate-500 max-w-xs mt-2 text-sm">Crie o seu primeiro plano de nutrição para organizar as refeições.</p>

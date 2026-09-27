@@ -1,9 +1,23 @@
 import React, { useState } from 'react';
 import { 
   ArrowLeft, ArrowRight, Edit2, Bell, StickyNote, Mail, Phone, Smartphone, 
-  User, Activity, Dumbbell, Apple, CreditCard, MessageSquare, Plus, Trash2, CheckCircle2, PlusCircle, Calendar, Search,
-  LayoutDashboard, Image, FileText, CheckSquare, TrendingUp, LineChart, HeartPulse, Settings, Info, ChevronDown, X, Clock, Eye, Stethoscope
+  User, Activity, Dumbbell, Apple, CreditCard, MessageSquare, Plus, Trash2, CheckCircle2, PlusCircle, Search,
+  LayoutDashboard, Image, FileText, CheckSquare, TrendingUp, LineChart, HeartPulse, Settings, Info, ChevronDown, X, Clock, Eye, Stethoscope,
+  ClipboardList
 } from 'lucide-react';
+import CustomCalendarIcon from '../icons/CustomCalendarIcon';
+import { 
+  CustomDashboardIcon, 
+  CustomDumbbellIcon, 
+  CustomClipboardIcon, 
+  CustomAppleIcon, 
+  CustomBellIcon, 
+  CustomChatIcon, 
+  CustomTargetIcon,
+  CustomVitalIcon,
+  CustomEvolutionIcon,
+  CustomSettingsIcon
+} from '../icons';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LineChart as RechartsLineChart, Line, Legend } from 'recharts';
 import { Client } from '../../types';
 import SendNotificationModal from './SendNotificationModal';
@@ -12,18 +26,16 @@ import ClientNotesModal from './ClientNotesModal';
 import ContactModal from './ContactModal';
 import ClientInfoModal from './ClientInfoModal';
 import { ClientEditModal } from './ClientEditModal';
-import { ClientRegisterWorkoutTab } from './ClientRegisterWorkoutTab';
 import { ClientSettingsTab } from './ClientSettingsTab';
 import { ClientTrainingPlanTab } from './ClientTrainingPlanTab';
 import { ClientCalendarTab } from './ClientCalendarTab';
 import { ClientPhotosTab } from './ClientPhotosTab';
 import { ClientNutritionTab } from './ClientNutritionTab';
-import { ClientNutritionLogTab } from './ClientNutritionLogTab';
 import { ClientExamsTab } from './ClientExamsTab';
 import { ClientAssessmentsTab } from './ClientAssessmentsTab';
-import { ClientDailyLogsTab } from './ClientDailyLogsTab';
 import { ClientAssessmentModal, AssessmentData } from './ClientAssessmentModal';
 import { ClientConfigTab } from './ClientConfigTab';
+import { ClientRegistosTab } from './ClientRegistosTab';
 
 // Mock Data for Evolução Table
 const MOCK_EVOLUTION_DATA = [
@@ -105,7 +117,7 @@ interface ClientDetailsViewProps {
   onBack: () => void;
 }
 
-type TabType = 'dashboard' | 'calendario' | 'avaliacoes' | 'fotos' | 'plano-treino' | 'registar-treino' | 'evolucao-treino' | 'cardio' | 'plano-nutricao' | 'registo-nutricao' | 'subscricoes' | 'definicoes' | 'exames' | 'configuracoes';
+type TabType = 'dashboard' | 'calendario' | 'avaliacoes' | 'fotos' | 'plano-treino' | 'registos' | 'registar-treino' | 'evolucao-treino' | 'cardio' | 'plano-nutricao' | 'registo-nutricao' | 'subscricoes' | 'definicoes' | 'exames' | 'configuracoes';
 
 const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack }) => {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
@@ -131,6 +143,7 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
   
   const [isAssessmentModalOpen, setIsAssessmentModalOpen] = useState(false);
   const [isPhysicalAssessmentModalOpen, setIsPhysicalAssessmentModalOpen] = useState(false);
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [assessmentModalMode, setAssessmentModalMode] = useState<'add' | 'view'>('add');
   const [currentAssessmentData, setCurrentAssessmentData] = useState<AssessmentData | undefined>(undefined);
   const [previousAssessmentData, setPreviousAssessmentData] = useState<AssessmentData | undefined>(undefined);
@@ -158,17 +171,16 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
   const [isEditingExerciseNote, setIsEditingExerciseNote] = useState(false);
 
   const tabs = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'calendario', label: 'Calendário', icon: Calendar },
-    { id: 'avaliacoes', label: 'Avaliações físicas', icon: Activity },
+    { id: 'dashboard', label: 'Dashboard', icon: CustomDashboardIcon },
+    { id: 'calendario', label: 'Calendário', icon: CustomCalendarIcon },
+    { id: 'avaliacoes', label: 'Avaliações físicas', icon: CustomVitalIcon },
     { id: 'fotos', label: 'Fotos', icon: Image },
-    { id: 'plano-treino', label: 'Plano de treino', icon: Dumbbell },
-    { id: 'registar-treino', label: 'Registar Treino', icon: PlusCircle },
-    { id: 'evolucao-treino', label: 'Evolução de treino', icon: TrendingUp },
-    { id: 'plano-nutricao', label: 'Plano de nutrição', icon: Apple },
-    { id: 'registo-nutricao', label: 'Registo de nutrição', icon: CheckSquare },
+    { id: 'plano-treino', label: 'Plano de treino', icon: CustomDumbbellIcon },
+    { id: 'registos', label: 'Registos', icon: CustomClipboardIcon },
+    { id: 'evolucao-treino', label: 'Evolução de treino', icon: CustomEvolutionIcon },
+    { id: 'plano-nutricao', label: 'Plano de nutrição', icon: CustomAppleIcon },
     { id: 'exames', label: 'Exames', icon: Stethoscope },
-    { id: 'configuracoes', label: 'Configurações', icon: Settings },
+    { id: 'configuracoes', label: 'Configurações', icon: CustomSettingsIcon },
   ];
 
   // Calculate days in team
@@ -199,7 +211,7 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
         }
       });
     });
-    return { week: `Semana ${week}`, volume: totalVolume };
+    return { week:`Semana ${week}`, volume: totalVolume };
   });
 
   const maxVolume = Math.max(...volumeData.map(d => d.volume));
@@ -249,7 +261,7 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
       let totalReps = 0;
       let volumeLoad = 0;
       
-      const weekData: any = { week: `Semana ${week}` };
+      const weekData: any = { week:`Semana ${week}`};
 
       workingSets.forEach((set, idx) => {
         const record = set.records.find(r => r.week === week);
@@ -271,7 +283,7 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
 
     return {
       ...exercise,
-      personalRecord: `${personalRecordKg}kg × ${personalRecordReps}`,
+      personalRecord:`${personalRecordKg}kg × ${personalRecordReps}`,
       estimated1RM: Math.round(estimated1RM),
       chartData,
       workingSetsCount: workingSets.length
@@ -326,14 +338,14 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
                         className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors" 
                         title="Editar"
                       >
-                        <Edit2 size={18} />
+                        <Edit2 size={16} />
                       </button>
                       <button 
                         onClick={() => setIsNotificationModalOpen(true)}
                         className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors" 
                         title="Enviar Notificação"
                       >
-                        <Bell size={18} />
+                        <CustomBellIcon size={18} />
                       </button>
                       <button 
                         onClick={() => setIsNotesModalOpen(true)}
@@ -361,7 +373,7 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
                       <Phone size={14} className="text-slate-400"/> {client.contact}
                     </button>
                     <span className="flex items-center gap-1.5 text-primary-600 dark:text-primary-400 font-medium">
-                      <Calendar size={14}/> Há {diffDays} dias na equipa
+                      <CustomCalendarIcon size={14}/> Há {diffDays} dias na equipa
                     </span>
                   </div>
                   
@@ -411,7 +423,7 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Próxima Avaliação</span>
-                    <ArrowRight size={12} className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity -rotate-45" />
+                    <ArrowRight size={12} className="text-slate-400  -rotate-45" />
                   </div>
                   <span className="text-sm font-bold text-slate-800 dark:text-white">15 Abr 2024</span>
                 </div>
@@ -435,7 +447,7 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
                 >
                   <div className="flex items-center justify-between mb-0.5">
                     <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Objetivo</span>
-                    <Edit2 size={12} className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Edit2 size={12} className="text-slate-400" />
                   </div>
                   <span className="text-sm font-bold text-slate-800 dark:text-white truncate" title={objetivo}>{objetivo}</span>
                 </div>
@@ -451,7 +463,7 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
                         há 4 semanas
                       </span>
                     </div>
-                    <Edit2 size={12} className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Edit2 size={12} className="text-slate-400" />
                   </div>
                   <span className="text-sm font-bold text-slate-800 dark:text-white truncate" title={estrategia}>{estrategia}</span>
                 </div>
@@ -465,13 +477,13 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
                 <div className="flex flex-col">
                   <div className="flex items-center gap-1.5 mb-0.5">
                     <span className="text-xs font-medium opacity-80">Vencimento</span>
-                    <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity -rotate-45" />
+                    <ArrowRight size={12} className="-rotate-45" />
                   </div>
                   <span className="text-sm font-bold">15 Abr 2024</span>
                 </div>
                 <div className="text-right">
                   <span className="text-sm font-bold">
-                    {daysUntilPayment < 0 ? 'Em atraso' : `${daysUntilPayment} dias restantes`}
+                    {daysUntilPayment < 0 ? 'Em atraso' :`${daysUntilPayment} dias restantes`}
                   </span>
                 </div>
               </div>
@@ -510,7 +522,7 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
                 <Edit2 size={16} />
               </button>
               <button onClick={() => setIsNotificationModalOpen(true)} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors" title="Enviar Notificação">
-                <Bell size={16} />
+                <CustomBellIcon size={16} />
               </button>
               <button onClick={() => setIsNotesModalOpen(true)} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors" title="Notas">
                 <StickyNote size={16} />
@@ -533,14 +545,14 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as TabType)}
-                className={`group flex items-center gap-2 px-4 py-4 border-b-2 font-medium text-sm whitespace-nowrap transition-all duration-300 ${
+                className={`group flex items-center gap-2 px-3.5 py-3.5 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
                   isActive 
-                    ? 'border-primary-500 text-primary-600 dark:text-primary-400' 
+                    ? 'border-primary-500 text-primary-600 dark:text-primary-400 font-semibold' 
                     : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
                 }`}
               >
                 <Icon size={18} className={`flex-shrink-0 transition-colors ${isActive ? 'text-primary-500' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
-                <span className={`transition-all duration-300 overflow-hidden ${isActive ? 'max-w-xs opacity-100' : 'max-w-0 opacity-0 group-hover:max-w-xs group-hover:opacity-100'}`}>
+                <span className="whitespace-nowrap">
                   {tab.label}
                 </span>
               </button>
@@ -563,13 +575,13 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Treino */}
                   <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50 flex flex-col items-center justify-center text-center h-40">
-                    <Dumbbell size={24} className="text-primary-500 mb-2" />
+                    <CustomDumbbellIcon size={24} className="mb-2" />
                     <p className="text-3xl font-black text-slate-800 dark:text-white leading-none mb-1">85%</p>
                     <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Treino</h4>
                   </div>
                   {/* Nutrição */}
                   <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50 flex flex-col items-center justify-center text-center h-40">
-                    <Apple size={24} className="text-emerald-500 mb-2" />
+                    <CustomAppleIcon size={24} className="mb-2" />
                     <p className="text-3xl font-black text-slate-800 dark:text-white leading-none mb-1">92%</p>
                     <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nutrição</h4>
                   </div>
@@ -585,7 +597,10 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
               {/* Col 2: Objetivo */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-bold text-slate-800 dark:text-white">Objetivo e Estratégia</h3>
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <CustomTargetIcon size={20} />
+                    Objetivo e Estratégia
+                  </h3>
                   <button onClick={() => setIsEditTargetModalOpen(true)} className="p-1.5 text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 bg-slate-50 dark:bg-slate-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
                     <Edit2 size={16} />
                   </button>
@@ -601,13 +616,13 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
                    {/* Combined Cards */}
                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/50 flex items-center justify-around p-4 mt-6">
                      <div className="flex flex-col items-center">
-                       <Calendar size={20} className="text-amber-500 mb-2" />
+                       <CustomCalendarIcon size={20} className="mb-2" />
                        <p className="text-2xl font-black text-slate-800 dark:text-white leading-none mb-1">4</p>
                        <h4 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Semanas</h4>
                      </div>
                      <div className="w-px h-12 bg-slate-200 dark:bg-slate-700/50"></div>
                      <div className="flex flex-col items-center">
-                       <Calendar size={20} className="text-emerald-500 mb-2" />
+                       <CustomCalendarIcon size={20} className="mb-2" />
                        <p className="text-2xl font-black text-slate-800 dark:text-white leading-none mb-1">3</p>
                        <h4 className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Dias</h4>
                      </div>
@@ -758,7 +773,7 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
                 <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 p-5 h-[400px] overflow-y-auto custom-scrollbar space-y-3">
                    {/* Note 1 */}
                    <div className="bg-[#fffdf0] dark:bg-yellow-900/20 p-4 rounded-xl border border-yellow-200/50 dark:border-yellow-700/30 relative group shadow-sm">
-                      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute top-3 right-3">
                          <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                            <Edit2 size={12} />
                          </button>
@@ -768,7 +783,7 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
                    </div>
                    {/* Note 2 */}
                    <div className="bg-[#f0f7ff] dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200/50 dark:border-blue-700/30 relative group shadow-sm">
-                      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute top-3 right-3">
                          <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                            <Edit2 size={12} />
                          </button>
@@ -1027,7 +1042,7 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
                         Nota de Treino
                       </h4>
                       {!isEditingTrainingNote && (
-                        <button onClick={() => setIsEditingTrainingNote(true)} className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-all rounded-lg hover:bg-white dark:hover:bg-slate-800">
+                        <button onClick={() => setIsEditingTrainingNote(true)} className="p-1.5 text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-all rounded-lg hover:bg-white dark:hover:bg-slate-800">
                           <Edit2 size={14} />
                         </button>
                       )}
@@ -1054,11 +1069,11 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
                   <div className="bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50 relative group">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="flex items-center gap-2 text-sm font-bold text-slate-800 dark:text-white">
-                        <MessageSquare size={16} className="text-indigo-500" />
+                        <CustomChatIcon size={16} className="text-indigo-500" />
                         Nota de Exercício
                       </h4>
                       {!isEditingExerciseNote && (
-                        <button onClick={() => setIsEditingExerciseNote(true)} className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all rounded-lg hover:bg-white dark:hover:bg-slate-800">
+                        <button onClick={() => setIsEditingExerciseNote(true)} className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all rounded-lg hover:bg-white dark:hover:bg-slate-800">
                           <Edit2 size={14} />
                         </button>
                       )}
@@ -1103,7 +1118,7 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
                           tickLine={false} 
                           tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 500 }} 
                           width={60}
-                          tickFormatter={(value) => `${value}kg`}
+                          tickFormatter={(value) =>`${value}kg`}
                         />
                         <Tooltip 
                           cursor={{ fill: 'rgba(241, 245, 249, 0.4)' }}
@@ -1298,12 +1313,16 @@ const ClientDetailsView: React.FC<ClientDetailsViewProps> = ({ client, onBack })
           <ClientExamsTab />
         )}
 
+        {activeTab === 'registos' && (
+          <ClientRegistosTab client={client} />
+        )}
+
         {activeTab === 'registo-nutricao' && (
-          <ClientNutritionLogTab />
+          <ClientRegistosTab client={client} initialSubTab="nutricao" />
         )}
 
         {activeTab === 'registar-treino' && (
-          <ClientRegisterWorkoutTab client={client} />
+          <ClientRegistosTab client={client} initialSubTab="treino" />
         )}
 
         {/* Placeholders for other tabs */}

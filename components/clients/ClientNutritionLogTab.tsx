@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { 
-  ChevronLeft, ChevronRight, Calendar as CalendarIcon, Info, ChevronDown, 
+  ChevronLeft, ChevronRight, Info, ChevronDown, 
   Target, Flame, Activity, PieChart, Plus, Filter, ArrowUpRight, 
   CheckCircle2, Clock, XCircle, ChevronUp, MoreVertical, Search, Utensils, AlertCircle, TrendingUp
 } from 'lucide-react';
+import CustomCalendarIcon, { CustomCalendarIcon as CalendarIcon } from '../icons/CustomCalendarIcon';
 import { motion, AnimatePresence } from 'motion/react';
 
 type DayStatus = 'completo' | 'parcial' | 'em_falta' | 'livre';
@@ -488,3 +489,5 @@ export const ClientNutritionLogTab: React.FC = () => {
     </div>
   );
 };
+
+export default ClientNutritionLogTab;

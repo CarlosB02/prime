@@ -15,6 +15,7 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && request.auth.token.email in [
         'Carlosbernardo.2002@gmail.com', 
+        'carlosbernardo.2002@gmail.com',
         'renatorodrigues_92@hotmail.com'
       ];
     }

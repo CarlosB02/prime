@@ -2,10 +2,8 @@ import React, { useState } from 'react';
 import { 
   Search, 
   Plus, 
-  Dumbbell,
   Filter,
   MoreVertical,
-  Calendar,
   Clock,
   Layers,
   Edit2,
@@ -15,9 +13,14 @@ import {
   ArrowDownUp,
   LayoutGrid,
   List,
-  History
+  History,
+  Eye
 } from 'lucide-react';
+import CustomCalendarIcon from '../icons/CustomCalendarIcon';
+import { CustomDumbbellIcon } from '../icons';
 import WorkoutPlanBuilder from './WorkoutPlanBuilder';
+import ViewWorkoutPlanModal from './ViewWorkoutPlanModal';
+import HistoryWorkoutModal from './HistoryWorkoutModal';
 
 export interface WorkoutPlan {
   id: string;
@@ -26,12 +29,13 @@ export interface WorkoutPlan {
   endDate?: string;
   hasWeeklyPeriodization: boolean;
   createdAt: string;
+  clientName?: string;
 }
 
 export const MOCK_PLANS: WorkoutPlan[] = [
-  { id: '1', name: 'Plano Hipertrofia Avançado', startDate: '2026-03-01', endDate: '2026-05-01', hasWeeklyPeriodization: true, createdAt: '2026-03-20T10:00:00Z' },
-  { id: '2', name: 'Plano Emagrecimento', startDate: '2026-01-01', endDate: '2026-03-01', hasWeeklyPeriodization: false, createdAt: '2025-12-28T10:00:00Z' },
-  { id: '3', name: 'Manutenção Contínua', startDate: '2026-03-15', hasWeeklyPeriodization: false, createdAt: '2026-03-10T10:00:00Z' },
+  { id: '1', name: 'Plano Hipertrofia Avançado', clientName: 'João Pereira', startDate: '2026-03-01', endDate: '2026-05-01', hasWeeklyPeriodization: true, createdAt: '2026-03-20T10:00:00Z' },
+  { id: '2', name: 'Plano Emagrecimento', clientName: 'Ana Silva', startDate: '2026-01-01', endDate: '2026-03-01', hasWeeklyPeriodization: false, createdAt: '2025-12-28T10:00:00Z' },
+  { id: '3', name: 'Manutenção Contínua', clientName: 'Carlos Mendes', startDate: '2026-03-15', hasWeeklyPeriodization: false, createdAt: '2026-03-10T10:00:00Z' },
   { id: '4', name: 'Força Base', hasWeeklyPeriodization: true, createdAt: '2026-03-22T10:00:00Z' },
 ];
 
@@ -44,11 +48,13 @@ const WorkoutsView: React.FC<WorkoutsViewProps> = ({ mode = 'manage', onSelectPl
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [plans, setPlans] = useState<WorkoutPlan[]>(MOCK_PLANS);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [activeFilter, setActiveFilter] = useState<'all' | 'in_progress' | 'completed'>('all');
   
   const [showBuilder, setShowBuilder] = useState(false);
   const [editingPlan, setEditingPlan] = useState<WorkoutPlan | null>(null);
+  const [viewPlan, setViewPlan] = useState<WorkoutPlan | null>(null);
+  const [historyPlan, setHistoryPlan] = useState<WorkoutPlan | null>(null);
 
   const handleSavePlan = (newPlan: any) => {
     // Basic mock save
@@ -57,7 +63,7 @@ const WorkoutsView: React.FC<WorkoutsViewProps> = ({ mode = 'manage', onSelectPl
       name: newPlan.name || 'Novo Plano de Treino',
       startDate: newPlan.startDate,
       endDate: newPlan.endDate,
-      hasWeeklyPeriodization: true,
+      hasWeeklyPeriodization: false,
       createdAt: editingPlan ? editingPlan.createdAt : new Date().toISOString()
     };
     
@@ -120,12 +126,12 @@ const WorkoutsView: React.FC<WorkoutsViewProps> = ({ mode = 'manage', onSelectPl
 
   const renderPlanCard = (plan: WorkoutPlan) => {
     return (
-      <div key={plan.id} className="glass-panel border rounded-2xl p-5 transition-all duration-300 hover:shadow-lg border-primary-100 dark:border-primary-900/30">
+      <div key={plan.id} onClick={() => mode === 'select' ? (onSelectPlan && onSelectPlan(plan)) : handleEdit(plan)} className="glass-panel border rounded-2xl p-5 transition-all duration-300 hover:shadow-lg border-primary-100 dark:border-primary-900/30 cursor-pointer">
         {/* Header */}
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/20">
-              <Dumbbell size={24} />
+              <CustomDumbbellIcon size={24} />
             </div>
             <div>
               <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100 line-clamp-1">{plan.name}</h3>
@@ -143,20 +149,23 @@ const WorkoutsView: React.FC<WorkoutsViewProps> = ({ mode = 'manage', onSelectPl
           <div className="flex items-center gap-1">
             {mode === 'select' ? (
               <button 
-                onClick={() => onSelectPlan && onSelectPlan(plan)} 
+                onClick={(e) => { e.stopPropagation(); onSelectPlan && onSelectPlan(plan); }} 
                 className="px-4 py-2 bg-primary-50 text-primary-600 hover:bg-primary-100 dark:bg-primary-900/20 dark:text-primary-400 dark:hover:bg-primary-900/40 rounded-xl font-bold text-sm transition-colors"
               >
                 Selecionar
               </button>
             ) : (
               <>
-                <button onClick={() => console.log('Histórico')} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
+                <button onClick={(e) => { e.stopPropagation(); setHistoryPlan(plan); }} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
                   <History size={16} />
                 </button>
-                <button onClick={() => handleEdit(plan)} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
+                <button onClick={(e) => { e.stopPropagation(); setViewPlan(plan); }} className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors">
+                  <Eye size={16} />
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); handleEdit(plan); }} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
                   <Edit2 size={16} />
                 </button>
-                <button onClick={() => handleDelete(plan.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
+                <button onClick={(e) => { e.stopPropagation(); handleDelete(plan.id); }} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
                   <Trash2 size={16} />
                 </button>
               </>
@@ -169,7 +178,7 @@ const WorkoutsView: React.FC<WorkoutsViewProps> = ({ mode = 'manage', onSelectPl
           
           {/* Dates Button/Info */}
           <button 
-            onClick={() => handleEdit(plan)}
+            onClick={(e) => { e.stopPropagation(); handleEdit(plan); }}
             className={`flex flex-col items-start p-3 rounded-xl border transition-all text-left ${
               plan.startDate || plan.endDate 
                 ? 'bg-slate-50 border-slate-200 dark:bg-slate-800/50 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-700' 
@@ -177,7 +186,7 @@ const WorkoutsView: React.FC<WorkoutsViewProps> = ({ mode = 'manage', onSelectPl
             }`}
           >
             <div className="flex items-center gap-2 mb-1">
-              <Calendar size={16} className={plan.startDate || plan.endDate ? 'text-primary-500' : 'text-slate-400'} />
+              <CustomCalendarIcon size={16} />
               <span className={`text-sm font-bold ${plan.startDate || plan.endDate ? 'text-slate-700 dark:text-slate-200' : 'text-slate-500 dark:text-slate-400'}`}>
                 Datas do Plano
               </span>
@@ -228,10 +237,10 @@ const WorkoutsView: React.FC<WorkoutsViewProps> = ({ mode = 'manage', onSelectPl
 
   const renderCompactPlanRow = (plan: WorkoutPlan) => {
     return (
-      <div key={plan.id} className="flex items-center justify-between p-4 glass-panel border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors opacity-80">
+      <div key={plan.id} onClick={() => mode === 'select' ? (onSelectPlan && onSelectPlan(plan)) : handleEdit(plan)} className="flex items-center justify-between p-4 glass-panel border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors opacity-80 cursor-pointer">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0">
-            <Dumbbell size={20} />
+            <CustomDumbbellIcon size={20} />
           </div>
           <div>
             <h3 className="font-semibold text-slate-800 dark:text-slate-200">{plan.name}</h3>
@@ -241,7 +250,7 @@ const WorkoutsView: React.FC<WorkoutsViewProps> = ({ mode = 'manage', onSelectPl
               </span>
               {plan.startDate && plan.endDate && (
                 <span className="flex items-center gap-1">
-                  <Calendar size={12} />
+                  <CustomCalendarIcon size={12} />
                   {new Date(plan.startDate).toLocaleDateString('pt-PT')} - {new Date(plan.endDate).toLocaleDateString('pt-PT')}
                 </span>
               )}
@@ -259,13 +268,16 @@ const WorkoutsView: React.FC<WorkoutsViewProps> = ({ mode = 'manage', onSelectPl
             </button>
           ) : (
             <>
-              <button onClick={() => console.log('Histórico')} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
+              <button onClick={(e) => { e.stopPropagation(); setHistoryPlan(plan); }} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
                 <History size={16} />
               </button>
-              <button onClick={() => handleEdit(plan)} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
+              <button onClick={(e) => { e.stopPropagation(); setViewPlan(plan); }} className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors">
+                <Eye size={16} />
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); handleEdit(plan); }} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
                 <Edit2 size={16} />
               </button>
-              <button onClick={() => handleDelete(plan.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
+              <button onClick={(e) => { e.stopPropagation(); handleDelete(plan.id); }} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
                 <Trash2 size={16} />
               </button>
             </>
@@ -374,7 +386,7 @@ const WorkoutsView: React.FC<WorkoutsViewProps> = ({ mode = 'manage', onSelectPl
       {filteredPlans.length === 0 ? (
         <div className="glass-panel border border-slate-200 dark:border-slate-800 rounded-2xl p-12 flex flex-col items-center justify-center text-center">
           <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-             <Dumbbell size={32} className="text-slate-400" />
+             <CustomDumbbellIcon size={32} />
           </div>
           <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">Sem planos de treino</h3>
           <p className="text-slate-500 max-w-xs mt-2 text-sm">Crie o seu primeiro plano de treino para organizar os exercícios.</p>
@@ -414,6 +426,19 @@ const WorkoutsView: React.FC<WorkoutsViewProps> = ({ mode = 'manage', onSelectPl
           })()}
         </div>
       )}
+
+      {/* Modals */}
+      <ViewWorkoutPlanModal
+        isOpen={viewPlan !== null}
+        onClose={() => setViewPlan(null)}
+        plan={viewPlan}
+      />
+
+      <HistoryWorkoutModal
+        isOpen={historyPlan !== null}
+        onClose={() => setHistoryPlan(null)}
+        plan={historyPlan}
+      />
     </div>
   );
 };

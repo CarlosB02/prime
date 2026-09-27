@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { 
-  Calendar as CalendarIcon, Clock, FileText, CheckSquare, Plus, 
+  Clock, FileText, CheckSquare, Plus, 
   Trash2, Edit2, Copy, ChevronLeft, ChevronRight, Activity, AlertCircle, RefreshCw, X, Search
 } from 'lucide-react';
+import CustomCalendarIcon, { CustomCalendarIcon as CalendarIcon } from '../icons/CustomCalendarIcon';
 import { Client } from '../../types';
 
 interface ClientSettingsTabProps {
@@ -143,7 +144,7 @@ export const ClientSettingsTab: React.FC<ClientSettingsTabProps> = ({ client }) 
     }
     
     for (let day = 1; day <= daysInMonth; day++) {
-      const dateString = `${currentYear}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dateString =`${currentYear}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const hasEvents = scheduleEvents.filter(e => e.date === dateString);
       
       let badgeClass = '';
@@ -163,8 +164,7 @@ export const ClientSettingsTab: React.FC<ClientSettingsTabProps> = ({ client }) 
           onClick={() => setSelectedDate(dateString)}
           className={`w-6 h-6 flex items-center justify-center text-[10px] rounded-full cursor-pointer relative
             ${isSelected ? 'bg-primary-600 text-white font-bold ring-2 ring-primary-300' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}
-            ${hasEvents.length > 0 && !isSelected ? 'font-bold text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}
-          `}
+            ${hasEvents.length > 0 && !isSelected ? 'font-bold text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}
         >
           {day}
           {hasEvents.length > 0 && !isSelected && (
@@ -336,15 +336,15 @@ export const ClientSettingsTab: React.FC<ClientSettingsTabProps> = ({ client }) 
                             )}
                           </p>
                         </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-1">
                           <button 
-                            onClick={() => { setEditingForm(form); setIsEditFormOpen(true); }}
+                            onClick={(e) => { e.stopPropagation(); setEditingForm(form); setIsEditFormOpen(true); }}
                             className="p-1.5 text-slate-400 hover:text-primary-600 transition-colors"
                           >
                             <Edit2 size={14} />
                           </button>
                           <button 
-                            onClick={() => handleRemoveForm(form.id)}
+                            onClick={(e) => { e.stopPropagation(); handleRemoveForm(form.id); }}
                             className="p-1.5 text-slate-400 hover:text-red-600 transition-colors"
                           >
                             <Trash2 size={14} />
@@ -407,7 +407,7 @@ export const ClientSettingsTab: React.FC<ClientSettingsTabProps> = ({ client }) 
                       {scheduleEvents.length === 0 ? (
                         <tr>
                           <td colSpan={4} className="py-8 text-center text-sm text-slate-400">
-                            Clique em "Gerar Cronograma" para preencher as datas.
+                            Clique em"Gerar Cronograma" para preencher as datas.
                           </td>
                         </tr>
                       ) : (
@@ -427,7 +427,7 @@ export const ClientSettingsTab: React.FC<ClientSettingsTabProps> = ({ client }) 
                               </div>
                             </td>
                             <td className="py-3 px-4 text-xs text-slate-500 hidden sm:table-cell">
-                              {event.interval ? `${event.interval} dias` : 'Manual'}
+                              {event.interval ?`${event.interval} dias`: 'Manual'}
                             </td>
                             <td className="py-3 px-4 text-right">
                               <button 

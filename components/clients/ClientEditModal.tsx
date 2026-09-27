@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, User, Lock, FileText, Activity, Apple, Upload, Plus, Trash2, Search, Calendar, CreditCard, Clock } from 'lucide-react';
+import { X, User, Lock, FileText, Activity, Apple, Upload, Plus, Trash2, Search, CreditCard, Clock } from 'lucide-react';
+import CustomCalendarIcon from '../icons/CustomCalendarIcon';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ClientEditModalProps {
@@ -197,7 +198,7 @@ export const ClientEditModal: React.FC<ClientEditModalProps> = ({ isOpen, onClos
                           <div>
                             <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Data de Aceitação</label>
                             <div className="flex items-center gap-2 text-slate-800 dark:text-white font-medium px-3 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
-                              <Calendar size={16} className="text-slate-400" />
+                              <CustomCalendarIcon size={16} />
                               12 Jan 2024
                             </div>
                           </div>

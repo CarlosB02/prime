@@ -7,13 +7,12 @@ import {
   Search,
   Filter,
   Clock,
-  MessageSquare,
-  Bell,
   Mail,
   Edit2,
   Copy,
   Trash2
 } from 'lucide-react';
+import { CustomBellIcon, CustomChatIcon } from '../icons';
 
 // Mock Data
 const CATEGORIES = [
@@ -105,8 +104,8 @@ const AutomationsView: React.FC = () => {
 
   const renderChannelIcon = (channel: string) => {
     switch (channel) {
-      case 'push': return <Bell size={14} className="text-primary-500" title="Push Notification" />;
-      case 'chat': return <MessageSquare size={14} className="text-blue-500" title="Chat" />;
+      case 'push': return <CustomBellIcon size={14} title="Push Notification" />;
+      case 'chat': return <CustomChatIcon size={14} title="Chat" />;
       case 'email': return <Mail size={14} className="text-emerald-500" title="Email" />;
       default: return null;
     }
@@ -230,7 +229,7 @@ const AutomationsView: React.FC = () => {
                     </div>
                   </td>
                   <td className="py-4 px-6 text-right">
-                    <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex justify-end gap-1">
                       <button className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="Editar">
                         <Edit2 size={16} />
                       </button>

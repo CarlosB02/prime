@@ -5,14 +5,11 @@ import {
   AlertCircle, 
   ArrowUpRight, 
   ArrowDownRight,
-  Wallet,
   Users,
   Search,
-  Calendar,
   Clock,
   Plus,
   Activity,
-  Target,
   BarChart3,
   PieChart as PieChartIcon,
   LineChart as LineChartIcon,
@@ -24,6 +21,13 @@ import {
   Instagram,
   UserCheck
 } from 'lucide-react';
+import { 
+  CustomWalletIcon, 
+  CustomTargetIcon, 
+  CustomEuroIcon, 
+  CustomEvolutionIcon, 
+  CustomUserPlusIcon 
+} from '../icons';
 import { 
   AreaChart, 
   Area, 
@@ -115,7 +119,7 @@ const FinanceView: React.FC = () => {
               <h3 className="text-2xl font-black text-slate-800 dark:text-white mt-1">€240</h3>
             </div>
             <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-              <DollarSign size={20} />
+              <CustomEuroIcon size={20} />
             </div>
           </div>
           <div className="flex items-center gap-1.5 text-sm mt-auto">
@@ -134,7 +138,7 @@ const FinanceView: React.FC = () => {
               <h3 className="text-2xl font-black text-slate-800 dark:text-white mt-1">€6,800</h3>
             </div>
             <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
-              <TrendingUp size={20} />
+              <CustomEvolutionIcon size={20} />
             </div>
           </div>
           <div className="flex items-center gap-1.5 text-sm mt-auto">
@@ -153,7 +157,7 @@ const FinanceView: React.FC = () => {
               <h3 className="text-2xl font-black text-slate-800 dark:text-white mt-1">€28,400</h3>
             </div>
             <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">
-              <Wallet size={20} />
+              <CustomWalletIcon size={20} />
             </div>
           </div>
           <div className="flex items-center gap-1.5 text-sm mt-auto">
@@ -172,7 +176,7 @@ const FinanceView: React.FC = () => {
               <h3 className="text-2xl font-black text-slate-800 dark:text-white mt-1">85%</h3>
             </div>
             <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400 shrink-0">
-              <Target size={20} />
+              <CustomTargetIcon size={20} />
             </div>
           </div>
           <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2 mt-1 mb-3">
@@ -253,7 +257,7 @@ const FinanceView: React.FC = () => {
           <div className="flex-1 flex flex-col justify-around gap-4">
             <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/80">
               <div className="flex items-center gap-3">
-                <UserPlus size={18} className="text-emerald-500" />
+                <CustomUserPlusIcon size={18} />
                 <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Novos Clientes</span>
               </div>
               <div className="text-right">
@@ -349,7 +353,7 @@ const FinanceView: React.FC = () => {
           <div className="glass-card rounded-2xl p-6 relative overflow-hidden group">
              <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-xl transition-colors" />
              <div className="flex items-center gap-2 mb-4 relative z-10">
-               <TrendingUp size={18} className="text-blue-600 dark:text-blue-400" />
+               <CustomEvolutionIcon size={18} />
                <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Receita Recorrente (MRR)</h3>
              </div>
              <div className="relative z-10">

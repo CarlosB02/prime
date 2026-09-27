@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { 
-  Activity, Calendar, TrendingUp, TrendingDown, Minus,
-  Scale, FileText, ChevronDown, Eye, Edit2, Trash2, ArrowRightLeft, Download, Plus, Map, Target
+  Activity, TrendingUp, TrendingDown, Minus,
+  Scale, FileText, ChevronDown, Eye, Edit2, Trash2, ArrowRightLeft, Download, Plus, Map
 } from 'lucide-react';
+import { CustomTargetIcon } from '../icons';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import { AssessmentData } from './ClientAssessmentModal';
 import { Client } from '../../types';
@@ -115,7 +116,7 @@ export const ClientAssessmentsTab: React.FC<ClientAssessmentsTabProps> = ({
           
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-              <Target size={24} />
+              <CustomTargetIcon size={24} />
             </div>
             <div>
               <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Cintura</p>
@@ -220,7 +221,7 @@ export const ClientAssessmentsTab: React.FC<ClientAssessmentsTabProps> = ({
                     const ancaDiff = prev ? (parseFloat(assessment.measures.anca) - parseFloat(prev.measures.anca)) : 0;
                     
                     return (
-                      <tr key={assessment.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                      <tr key={assessment.id} onClick={() => onEdit(assessment)} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer">
                         <td className="px-6 py-4">
                           <div className="font-bold text-slate-800 dark:text-white">{new Date(assessment.date).toLocaleDateString('pt-PT')}</div>
                           <div className="font-mono text-xs text-slate-500">{assessment.id}</div>
@@ -270,7 +271,7 @@ export const ClientAssessmentsTab: React.FC<ClientAssessmentsTabProps> = ({
                               <Eye size={16} />
                             </button>
                             <button 
-                              onClick={() => onEdit(assessment)}
+                              onClick={(e) => { e.stopPropagation(); onEdit(assessment); }}
                               className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                               title="Editar"
                             >

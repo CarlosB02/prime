@@ -147,12 +147,10 @@ const FoodView: React.FC = () => {
                 
                 <button 
                     onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                    className={`
-                    flex items-center justify-center px-4 py-2.5 rounded-xl border text-sm font-medium transition-all
+                    className={`flex items-center justify-center px-4 py-2.5 rounded-xl border text-sm font-medium transition-all
                     ${showAdvancedFilters
                         ? 'bg-primary-50 border-primary-200 text-primary-600 dark:bg-primary-900/20 dark:border-primary-800 dark:text-primary-400' 
-                        : 'bg-white border-slate-200 text-slate-600 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}
-                    `}
+                        : 'bg-white border-slate-200 text-slate-600 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                 >
                     <Filter size={16} className="mr-2" />
                     Filtros {showAdvancedFilters ? <ChevronUp size={14} className="ml-1"/> : <ChevronDown size={14} className="ml-1"/>}
@@ -163,12 +161,10 @@ const FoodView: React.FC = () => {
             <div className="flex gap-3 w-full md:w-auto justify-end">
                 <button 
                     onClick={() => setShowDeleted(!showDeleted)}
-                    className={`
-                    flex items-center px-4 py-2.5 rounded-xl border text-sm font-medium transition-all
+                    className={`flex items-center px-4 py-2.5 rounded-xl border text-sm font-medium transition-all
                     ${showDeleted 
                         ? 'bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400' 
-                        : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-400'}
-                    `}
+                        : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-400'}`}
                 >
                     <Trash2 size={16} />
                 </button>
@@ -262,10 +258,9 @@ const FoodView: React.FC = () => {
             filteredFoods.map((food) => (
               <div 
                 key={food.id} 
-                className={`
-                  group grid grid-cols-12 gap-4 px-6 py-4 items-center transition-all duration-200 hover:bg-slate-50 dark:hover:bg-slate-800/50
-                  ${food.isDeleted ? 'opacity-60 grayscale' : ''}
-                `}
+                onClick={() => !food.isDeleted && handleEdit(food)}
+                className={`group grid grid-cols-12 gap-4 px-6 py-4 items-center transition-all duration-200 hover:bg-slate-50 dark:hover:bg-slate-800/50
+                  ${food.isDeleted ? 'opacity-60 grayscale' : 'cursor-pointer'}`}
               >
                 {/* ID */}
                 <div className="col-span-1 hidden md:block text-center">
@@ -325,37 +320,37 @@ const FoodView: React.FC = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="col-span-3 sm:col-span-2 md:col-span-2 flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="col-span-3 sm:col-span-2 md:col-span-2 flex justify-end items-center gap-2">
                    {food.isDeleted ? (
                      <>
                         <button 
                           onClick={() => toggleDelete(food.id)}
                           title="Restaurar"
-                          className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                          className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                         >
-                          <RotateCcw size={18} />
+                          <RotateCcw size={16} />
                         </button>
                         <button 
                           onClick={() => handleDeletePermanent(food.id)}
                           title="Eliminar Permanentemente"
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} />
                         </button>
                      </>
                    ) : (
                      <>
                         <button 
-                          onClick={() => handleEdit(food)}
-                          className="p-2 text-slate-500 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                          onClick={(e) => { e.stopPropagation(); handleEdit(food); }}
+                          className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
                         >
-                          <Edit2 size={18} />
+                          <Edit2 size={16} />
                         </button>
                         <button 
                           onClick={() => toggleDelete(food.id)}
-                          className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} />
                         </button>
                      </>
                    )}

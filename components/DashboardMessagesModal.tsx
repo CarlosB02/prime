@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, MessageSquare, ClipboardList, BookOpen, Target, CreditCard, ChevronRight } from 'lucide-react';
+import { X, BookOpen, ChevronRight } from 'lucide-react';
+import { CustomChatIcon, CustomClipboardIcon, CustomTargetIcon, CustomWalletIcon } from './icons';
 
 interface DashboardMessagesModalProps {
   isOpen: boolean;
@@ -13,11 +14,11 @@ const DashboardMessagesModal: React.FC<DashboardMessagesModalProps> = ({ isOpen,
   if (!isOpen) return null;
 
   const MAIN_TABS = [
-    { id: 'Geral', label: 'Geral', icon: MessageSquare },
-    { id: 'Avaliações', label: 'Avaliações', icon: ClipboardList, subTabs: ['Avaliação Inicial', 'Check-ins', 'Questionários'] },
+    { id: 'Geral', label: 'Geral', icon: CustomChatIcon },
+    { id: 'Avaliações', label: 'Avaliações', icon: CustomClipboardIcon, subTabs: ['Avaliação Inicial', 'Check-ins', 'Questionários'] },
     { id: 'Notas de Aluno', label: 'Notas de Aluno', icon: BookOpen, subTabs: ['Treino', 'Exercícios', 'Pós Treino', 'Alimentação'] },
-    { id: 'Objetivos', label: 'Objetivos', icon: Target, subTabs: ['Meta de Carga', 'Prazos'] },
-    { id: 'Pagamentos', label: 'Pagamentos', icon: CreditCard },
+    { id: 'Objetivos', label: 'Objetivos', icon: CustomTargetIcon, subTabs: ['Meta de Carga', 'Prazos'] },
+    { id: 'Pagamentos', label: 'Pagamentos', icon: CustomWalletIcon },
   ];
 
   const handleMainTabClick = (tabId: string, subTabs?: string[]) => {
@@ -81,7 +82,7 @@ const DashboardMessagesModal: React.FC<DashboardMessagesModalProps> = ({ isOpen,
         {/* Generic fallback for others */}
         {activeMainTab !== 'Geral' && activeMainTab !== 'Avaliações' && !(activeMainTab === 'Notas de Aluno' && activeSubTab === 'Treino') && (
           <div className="flex flex-col items-center justify-center h-48 text-slate-400">
-            <MessageSquare size={32} className="mb-3 opacity-20" />
+            <CustomChatIcon size={32} className="mb-3 opacity-20" />
             <p className="text-sm">Nenhuma notificação para esta categoria.</p>
           </div>
         )}
@@ -98,8 +99,8 @@ const DashboardMessagesModal: React.FC<DashboardMessagesModalProps> = ({ isOpen,
         {/* Left Sidebar (Main Tabs) */}
         <div className="w-64 bg-slate-50 dark:bg-slate-800/50 border-r border-slate-200 dark:border-slate-700/50 flex flex-col">
           <div className="p-6 border-b border-slate-200 dark:border-slate-700/50 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary-100 text-primary-600 flex items-center justify-center">
-              <MessageSquare size={16} />
+            <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 flex items-center justify-center">
+              <CustomChatIcon size={16} />
             </div>
             <h3 className="font-black text-slate-800 dark:text-white">Mensagens</h3>
           </div>

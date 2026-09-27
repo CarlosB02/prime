@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { auth } from '../lib/firebase';
 import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { LogIn } from 'lucide-react';
+import { Pr1meLogo } from './icons';
 
 const LoginView: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -55,11 +56,14 @@ const LoginView: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center h-screen w-full bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
       <div className="w-full max-w-md p-8 bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-700 text-center">
-        <div className="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 text-primary-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-          <LogIn size={32} />
+        <div className="w-24 h-24 flex items-center justify-center mx-auto mb-4 relative">
+          <div className="absolute inset-0 bg-cyan-500/20 blur-xl rounded-full pointer-events-none" />
+          <Pr1meLogo size={84} className="drop-shadow-[0_0_20px_rgba(0,212,255,0.5)] relative z-10" />
         </div>
-        <h1 className="text-3xl font-bold mb-2">Prime Pro</h1>
-        <p className="text-slate-500 dark:text-slate-400 mb-6">
+        <h1 className="text-4xl font-black mb-2 lowercase tracking-tight bg-gradient-to-r from-sky-400 via-cyan-300 to-blue-500 bg-clip-text text-transparent">
+          pr<span className="text-cyan-400">1</span>me
+        </h1>
+        <p className="text-slate-500 dark:text-slate-400 mb-6 text-sm">
           Inicia sessão para gerires os teus clientes e planos de treino.
         </p>
         

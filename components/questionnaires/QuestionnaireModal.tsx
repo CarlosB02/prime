@@ -387,7 +387,7 @@ const QuestionnaireModal: React.FC<QuestionnaireModalProps> = ({ isOpen, onClose
                                                   onChange={(e) => updateQuestion(q.id, { text: e.target.value })}
                                                   className="w-full text-lg font-medium bg-transparent border-b border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-primary-500 outline-none transition-colors placeholder:text-slate-300 dark:placeholder:text-slate-600 pb-1"
                                                   placeholder="Escreva a sua pergunta aqui..."
-                                                  autoFocus
+                                                  
                                               />
                                           </div>
                                           <div className="w-full sm:w-48 relative shrink-0">
@@ -444,7 +444,7 @@ const QuestionnaireModal: React.FC<QuestionnaireModalProps> = ({ isOpen, onClose
                                                         <button 
                                                             type="button"
                                                             onClick={() => removeOption(q.id, optIndex)}
-                                                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors opacity-0 group-hover/option:opacity-100"
+                                                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors "
                                                             disabled={(q.options?.length || 0) <= 1}
                                                         >
                                                             <X size={16} />

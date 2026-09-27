@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Save, X, Edit2, CheckCircle2, Circle, AlertCircle, FileText } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Save, X, Edit2, CheckCircle2, Circle, AlertCircle, FileText } from 'lucide-react';
+import CustomCalendarIcon, { CustomCalendarIcon as CalendarIcon } from '../icons/CustomCalendarIcon';
+import { Client } from '../../types';
 
-export const ClientDailyLogsTab: React.FC = () => {
+interface ClientDailyLogsTabProps {
+  client?: Client;
+}
+
+export const ClientDailyLogsTab: React.FC<ClientDailyLogsTabProps> = ({ client }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -9,8 +15,8 @@ export const ClientDailyLogsTab: React.FC = () => {
       {/* Top Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-black text-slate-800 dark:text-white">Registos Diários</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Acompanhamento semanal de hábitos, nutrição e treino.</p>
+          <h2 className="text-xl font-black text-slate-800 dark:text-white">Hábitos Diários & Marcadores</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Acompanhamento semanal de água, sono, passos, biofeedback e rotina.</p>
         </div>
         
         <div className="flex flex-wrap items-center gap-3">

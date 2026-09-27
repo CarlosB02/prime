@@ -431,7 +431,7 @@ export const ClientExamsTab: React.FC<ClientExamsTabProps> = ({ client }) => {
                             {param.ref}
                           </td>
                           <td className="py-2 px-4 text-xs text-slate-400">
-                            {param.prev ? `${param.prev} ${param.unit}` : '-'}
+                            {param.prev ?`${param.prev} ${param.unit}`: '-'}
                           </td>
                           <td className="py-2 px-4">
                             <div className="flex items-center gap-2">
@@ -625,15 +625,15 @@ export const ClientExamsTab: React.FC<ClientExamsTabProps> = ({ client }) => {
                         </div>
                       </td>
                       <td className="py-4 px-6 text-right">
-                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex justify-end gap-2">
                           <button 
-                            onClick={() => handleEdit(exam)}
+                            onClick={(e) => { e.stopPropagation(); handleEdit(exam); }}
                             className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
                           >
                             <Edit2 size={16} />
                           </button>
                           <button 
-                            onClick={() => handleDelete(exam.id)}
+                            onClick={(e) => { e.stopPropagation(); handleDelete(exam.id); }}
                             className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                           >
                             <Trash2 size={16} />

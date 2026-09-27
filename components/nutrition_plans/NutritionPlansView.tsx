@@ -2,18 +2,19 @@ import React, { useState } from 'react';
 import { 
   Search, 
   Plus, 
-  Apple, // Replaced Dumbbell with Apple for nutrition
   Filter,
   MoreVertical,
-  Calendar,
-  Clock,
   Layers,
   Edit2,
   Trash2,
   CheckCircle2,
   ArrowRight,
-  ArrowDownUp
+  ArrowDownUp,
+  LayoutGrid,
+  List
 } from 'lucide-react';
+import CustomCalendarIcon from '../icons/CustomCalendarIcon';
+import { CustomAppleIcon, CustomClockIcon } from '../icons';
 import NutritionPlanBuilder from './NutritionPlanBuilder';
 
 interface NutritionPlan {
@@ -36,6 +37,8 @@ const NutritionPlansView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [plans, setPlans] = useState<NutritionPlan[]>(MOCK_PLANS);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'in_progress' | 'completed'>('all');
   
   const [showBuilder, setShowBuilder] = useState(false);
   const [editingPlan, setEditingPlan] = useState<NutritionPlan | null>(null);
@@ -109,18 +112,18 @@ const NutritionPlansView: React.FC = () => {
 
   const renderPlanCard = (plan: NutritionPlan) => {
     return (
-      <div key={plan.id} className="glass-card rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:border-primary-500/50 dark:hover:border-primary-500/50 transition-all group flex flex-col h-full">
+      <div key={plan.id} onClick={(e) => { e.stopPropagation(); handleEdit(plan); }} className="glass-card rounded-2xl border border-slate-200 dark:border-slate-800 p-5 hover:border-primary-500/50 dark:hover:border-primary-500/50 transition-all group flex flex-col h-full cursor-pointer">
         {/* Card Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400">
-            <Apple size={24} />
+            <CustomAppleIcon size={24} />
           </div>
           
           <div className="flex items-center gap-1">
-            <button onClick={() => handleEdit(plan)} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
+            <button onClick={(e) => { e.stopPropagation(); handleEdit(plan); }} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
               <Edit2 size={16} />
             </button>
-            <button onClick={() => handleDelete(plan.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
+            <button onClick={(e) => { e.stopPropagation(); handleDelete(plan.id); }} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
               <Trash2 size={16} />
             </button>
           </div>
@@ -139,7 +142,7 @@ const NutritionPlansView: React.FC = () => {
           <div className="flex flex-col gap-2 mt-4">
             {(plan.startDate || plan.endDate) && (
               <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                <Calendar size={14} className="text-slate-400" />
+                <CustomCalendarIcon size={14} />
                 <span>
                   {plan.startDate ? new Date(plan.startDate).toLocaleDateString('pt-PT') : 'N/A'} - 
                   {plan.endDate ? new Date(plan.endDate).toLocaleDateString('pt-PT') : 'Atual'}
@@ -147,7 +150,7 @@ const NutritionPlansView: React.FC = () => {
               </div>
             )}
             <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-              <Clock size={14} className="text-slate-400" />
+              <CustomClockIcon size={14} />
               <span>Criado a {new Date(plan.createdAt).toLocaleDateString('pt-PT')}</span>
             </div>
           </div>
@@ -159,10 +162,10 @@ const NutritionPlansView: React.FC = () => {
 
   const renderCompactPlanRow = (plan: NutritionPlan) => {
     return (
-      <div key={plan.id} className="flex items-center justify-between p-4 glass-panel border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors opacity-80">
+      <div key={plan.id} onClick={() => handleEdit(plan)} className="flex items-center justify-between p-4 glass-panel border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors opacity-80 cursor-pointer">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0">
-            <Apple size={20} />
+            <CustomAppleIcon size={20} />
           </div>
           <div>
             <h3 className="font-semibold text-slate-800 dark:text-slate-200">{plan.name}</h3>
@@ -172,7 +175,7 @@ const NutritionPlansView: React.FC = () => {
               </span>
               {plan.startDate && plan.endDate && (
                 <span className="flex items-center gap-1">
-                  <Calendar size={12} />
+                  <CustomCalendarIcon size={12} />
                   {new Date(plan.startDate).toLocaleDateString('pt-PT')} - {new Date(plan.endDate).toLocaleDateString('pt-PT')}
                 </span>
               )}
@@ -181,10 +184,10 @@ const NutritionPlansView: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-1">
-          <button onClick={() => handleEdit(plan)} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
+          <button onClick={(e) => { e.stopPropagation(); handleEdit(plan); }} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
             <Edit2 size={16} />
           </button>
-          <button onClick={() => handleDelete(plan.id)} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
+          <button onClick={(e) => { e.stopPropagation(); handleDelete(plan.id); }} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
             <Trash2 size={16} />
           </button>
         </div>
@@ -224,11 +227,72 @@ const NutritionPlansView: React.FC = () => {
         </div>
       </div>
 
+      {/* Filters & View Toggles */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl w-full sm:w-auto">
+          {[
+            { id: 'all', label: 'Todos' },
+            { id: 'in_progress', label: 'Em Progresso' },
+            { id: 'completed', label: 'Concluídos' }
+          ].map(filter => (
+            <button
+              key={filter.id}
+              onClick={() => setActiveFilter(filter.id as any)}
+              className={`flex-1 sm:flex-none px-4 py-2 text-sm font-bold rounded-lg transition-all ${
+                activeFilter === filter.id
+                  ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-lg transition-all ${
+                viewMode === 'grid'
+                  ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+              }`}
+              title="Vista em Grelha"
+            >
+              <LayoutGrid size={18} />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-lg transition-all ${
+                viewMode === 'list'
+                  ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+              }`}
+              title="Vista em Linha"
+            >
+              <List size={18} />
+            </button>
+          </div>
+          <div className="relative">
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
+              className="appearance-none pl-10 pr-8 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none transition-all text-sm text-slate-700 dark:text-slate-300 font-medium cursor-pointer"
+            >
+              <option value="newest">Mais recente</option>
+              <option value="oldest">Mais antigo</option>
+            </select>
+            <ArrowDownUp size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          </div>
+        </div>
+      </div>
+
       {/* Content Area */}
       {filteredPlans.length === 0 ? (
         <div className="glass-panel border border-slate-200 dark:border-slate-800 rounded-2xl p-12 flex flex-col items-center justify-center text-center">
           <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-             <Apple size={32} className="text-slate-400" />
+             <CustomAppleIcon size={32} />
           </div>
           <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">Sem planos de nutrição</h3>
           <p className="text-slate-500 max-w-xs mt-2 text-sm">Crie o seu primeiro plano de nutrição para organizar as refeições.</p>
@@ -240,56 +304,34 @@ const NutritionPlansView: React.FC = () => {
           </button>
         </div>
       ) : (
-        <div className="space-y-10">
-          
-          {/* In Progress Section */}
-          {inProgressPlans.length > 0 && (
-            <section>
-              <div className="flex items-center gap-3 mb-4 px-1">
-                <div className="w-2 h-6 bg-primary-500 rounded-full"></div>
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Em Progresso</h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold">
-                  {inProgressPlans.length}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {inProgressPlans.map(plan => renderPlanCard(plan))}
-              </div>
-            </section>
-          )}
+        <div className="space-y-6">
+          {(() => {
+            const displayedPlans = filteredPlans.filter(plan => {
+              if (activeFilter === 'all') return true;
+              const isCompleted = plan.endDate && new Date(plan.endDate) < now;
+              return activeFilter === 'completed' ? isCompleted : !isCompleted;
+            }).sort(sortFn);
 
-          {/* Completed Section */}
-          {completedPlans.length > 0 && (
-            <section>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 px-1">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-6 bg-slate-300 dark:bg-slate-700 rounded-full"></div>
-                  <h2 className="text-lg font-bold text-slate-800 dark:text-white">Concluídos</h2>
-                  <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold">
-                    {completedPlans.length}
-                  </span>
+            if (displayedPlans.length === 0) {
+              return (
+                <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+                  Nenhum plano encontrado para este filtro.
                 </div>
-                
-                <div className="relative">
-                  <select
-                    value={sortOrder}
-                    onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
-                    className="appearance-none pl-10 pr-8 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none transition-all text-sm text-slate-700 dark:text-slate-300 font-medium cursor-pointer w-full sm:w-auto"
-                  >
-                    <option value="newest">Mais recente</option>
-                    <option value="oldest">Mais antigo</option>
-                  </select>
-                  <ArrowDownUp size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                </div>
+              );
+            }
+
+            return viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {displayedPlans.map(plan => renderPlanCard(plan))}
               </div>
+            ) : (
               <div className="flex flex-col gap-3">
-                {completedPlans.map(plan => renderCompactPlanRow(plan))}
+                {displayedPlans.map(plan => renderCompactPlanRow(plan))}
               </div>
-            </section>
-          )}
+            );
+          })()}
         </div>
       )}
-
     </div>
   );
 };

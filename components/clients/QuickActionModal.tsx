@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { 
   X, 
   Send, 
-  CreditCard, 
-  Gift, 
-  UserMinus,
-  MessageSquare,
-  AlertCircle,
-  Clock
+  CreditCard
 } from 'lucide-react';
+import { 
+  CustomChatIcon, 
+  CustomGiftIcon, 
+  CustomUserMinusIcon, 
+  CustomClockIcon, 
+  CustomAlertCircleIcon 
+} from '../icons';
 import { Client } from '../../types';
 
 export type QuickActionModalType = 'payment_expiring' | 'birthday' | 'inactive_suspended' | null;
@@ -101,7 +103,7 @@ const QuickActionModal: React.FC<QuickActionModalProps> = ({ type, isOpen, onClo
                     onClick={() => handleOpenMessage(client, 'Olá [first_name], o seu plano está prestes a expirar. Caso queira renovar, entre em contacto connosco.')}
                     className="w-full mt-2 py-2 flex items-center justify-center gap-2 text-xs font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/40 rounded-lg transition-colors"
                   >
-                    <MessageSquare size={14} />
+                    <CustomChatIcon size={14} />
                     Enviar mensagem automática
                   </button>
                 )}
@@ -166,7 +168,7 @@ const QuickActionModal: React.FC<QuickActionModalProps> = ({ type, isOpen, onClo
                   onClick={() => handleOpenMessage(client, 'Parabéns [first_name]! 🎉\nA equipa deseja-lhe um excelente aniversário e um ótimo ano de treinos.')}
                   className="w-full mt-2 py-2 flex items-center justify-center gap-2 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 rounded-lg transition-colors"
                 >
-                  <MessageSquare size={14} />
+                  <CustomChatIcon size={14} />
                   Enviar mensagem automática
                 </button>
               )}
@@ -202,7 +204,7 @@ const QuickActionModal: React.FC<QuickActionModalProps> = ({ type, isOpen, onClo
                   </div>
                   <div className="text-right shrink-0">
                     <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                      <Clock size={10} /> {client.lastActive}
+                      <CustomClockIcon size={12} /> {client.lastActive}
                     </div>
                   </div>
                 </div>
@@ -230,7 +232,7 @@ const QuickActionModal: React.FC<QuickActionModalProps> = ({ type, isOpen, onClo
                   </div>
                   <div className="text-right shrink-0">
                     <div className="text-[10px] text-red-500 flex items-center gap-1 bg-red-50 dark:bg-red-900/20 px-1.5 py-0.5 rounded">
-                      <AlertCircle size={10} /> Atenção
+                      <CustomAlertCircleIcon size={12} /> Atenção
                     </div>
                   </div>
                 </div>
@@ -253,13 +255,13 @@ const QuickActionModal: React.FC<QuickActionModalProps> = ({ type, isOpen, onClo
       case 'birthday':
         return {
           title: 'Aniversariantes de Hoje',
-          icon: <Gift className="text-purple-500" size={20} />,
+          icon: <CustomGiftIcon size={20} />,
           content: renderBirthdays()
         };
       case 'inactive_suspended':
         return {
           title: 'Inativos ou Suspensos',
-          icon: <UserMinus className="text-slate-500" size={20} />,
+          icon: <CustomUserMinusIcon size={20} />,
           content: renderInactiveSuspended()
         };
       default:

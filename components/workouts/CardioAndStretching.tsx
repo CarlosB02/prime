@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { 
-  Activity, Clock, Calendar, Flame, ChevronRight, Check, Settings2, Plus, 
+  Activity, Clock, Flame, ChevronRight, Check, Settings2, Plus, 
   Trash2, Edit2, Copy, GripVertical, FileText, Move
 } from 'lucide-react';
+import CustomCalendarIcon from '../icons/CustomCalendarIcon';
 import { motion, AnimatePresence } from 'motion/react';
 
 const WEEK_DAYS = [
@@ -16,7 +17,7 @@ const WEEK_DAYS = [
 ];
 
 export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongamentos', hideTabs?: boolean }> = ({ type, hideTabs }) => {
-  const [activeTab, setActiveTab] = useState<'cardio' | 'alongamentos'>(type || 'cardio');
+  const [activeTab, setActiveTab] = useState<'cardio' | 'alongamentos'>(type || 'alongamentos');
 
   // --- Cardio State ---
   const [periodicity, setPeriodicity] = useState<'semanal' | 'diario'>('semanal');
@@ -61,16 +62,16 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
   const estimatedCalories = totalTimeInMinutes * 8; // approx 8 kcal per min
 
   const formatTime = (value: number) => {
-    if (timeUnit === 'minutos') return `${value} min`;
-    return `${value}h`;
+    if (timeUnit === 'minutos') return`${value} min`;
+    return`${value}h`;
   };
 
   const formatMinutesToHours = (mins: number) => {
     const h = Math.floor(mins / 60);
     const m = mins % 60;
-    if (h > 0 && m > 0) return `${h}h ${m}m`;
-    if (h > 0) return `${h}h`;
-    return `${m}m`;
+    if (h > 0 && m > 0) return`${h}h ${m}m`;
+    if (h > 0) return`${h}h`;
+    return`${m}m`;
   };
 
   // --- Handlers ---
@@ -116,23 +117,11 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
   };
 
   return (
-    <div className="space-y-6 animate-fade-in max-w-5xl mx-auto py-2">
+    <div className="space-y-6 animate-fade-in w-full py-2">
       
       {/* Tabs */}
       {!hideTabs && (
       <div className="flex border-b border-slate-200 dark:border-slate-800">
-        <button
-          onClick={() => setActiveTab('cardio')}
-          className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors ${
-            activeTab === 'cardio'
-              ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-              : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            <Activity size={16} /> Cardio
-          </div>
-        </button>
         <button
           onClick={() => setActiveTab('alongamentos')}
           className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors ${
@@ -143,6 +132,18 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
         >
           <div className="flex items-center gap-2">
             <Move size={16} /> Alongamentos
+          </div>
+        </button>
+        <button
+          onClick={() => setActiveTab('cardio')}
+          className={`px-6 py-3 text-sm font-bold border-b-2 transition-colors ${
+            activeTab === 'cardio'
+              ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+              : 'border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <Activity size={16} /> Cardio
           </div>
         </button>
       </div>
@@ -159,8 +160,8 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
           >
             {/* 1. Resumo */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="glass-card rounded-2xl p-5 border border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-2 mb-2 text-blue-500">
+              <div className="bg-primary-50 dark:bg-primary-900/20 rounded-2xl p-5 border border-primary-100 dark:border-primary-800/50">
+                <div className="flex items-center gap-2 mb-2 text-primary-600 dark:text-primary-400">
                   <Clock size={16} />
                   <span className="text-sm font-bold">Tempo Total</span>
                 </div>
@@ -170,9 +171,9 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
                 <div className="text-xs text-slate-500 mt-1">Por semana</div>
               </div>
               
-              <div className="glass-card rounded-2xl p-5 border border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-2 mb-2 text-indigo-500">
-                  <Calendar size={16} />
+              <div className="bg-primary-50 dark:bg-primary-900/20 rounded-2xl p-5 border border-primary-100 dark:border-primary-800/50">
+                <div className="flex items-center gap-2 mb-2 text-primary-600 dark:text-primary-400">
+                  <CustomCalendarIcon size={16} />
                   <span className="text-sm font-bold">Dias de Treino</span>
                 </div>
                 <div className="text-2xl font-black text-slate-800 dark:text-white">
@@ -181,8 +182,8 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
                 <div className="text-xs text-slate-500 mt-1">Sessões programadas</div>
               </div>
 
-              <div className="glass-card rounded-2xl p-5 border border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-2 mb-2 text-emerald-500">
+              <div className="bg-primary-50 dark:bg-primary-900/20 rounded-2xl p-5 border border-primary-100 dark:border-primary-800/50">
+                <div className="flex items-center gap-2 mb-2 text-primary-600 dark:text-primary-400">
                   <Activity size={16} />
                   <span className="text-sm font-bold">Média p/ Sessão</span>
                 </div>
@@ -192,8 +193,8 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
                 <div className="text-xs text-slate-500 mt-1">Tempo por treino</div>
               </div>
 
-              <div className="glass-card rounded-2xl p-5 border border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-2 mb-2 text-orange-500">
+              <div className="bg-primary-50 dark:bg-primary-900/20 rounded-2xl p-5 border border-primary-100 dark:border-primary-800/50">
+                <div className="flex items-center gap-2 mb-2 text-primary-600 dark:text-primary-400">
                   <Flame size={16} />
                   <span className="text-sm font-bold">Calorias Est.</span>
                 </div>
@@ -346,16 +347,44 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
                       </div>
 
                       {dailyConfigType === 'mesmo' ? (
-                        <div className="max-w-xs">
-                          <label className="block text-xs font-semibold text-slate-500 mb-2">
-                            Tempo diário ({timeUnit})
-                          </label>
-                          <input 
-                            type="number"
-                            value={dailyTime}
-                            onChange={(e) => setDailyTime(Number(e.target.value))}
-                            className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-bold focus:ring-2 focus:ring-primary-500 outline-none"
-                          />
+                        <div className="flex flex-row items-end gap-4 max-w-xl flex-wrap sm:flex-nowrap">
+                          <div className="w-full sm:w-52">
+                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
+                              Tempo diário ({timeUnit})
+                            </label>
+                            <input 
+                              type="number"
+                              min={0}
+                              value={dailyTime}
+                              onChange={(e) => setDailyTime(Math.max(0, Number(e.target.value)))}
+                              className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-800 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none"
+                            />
+                          </div>
+
+                          <div className="flex-1 w-full sm:w-auto min-w-[200px]">
+                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
+                              Total Semanal {selectedDays.length > 0 && `(${selectedDays.length} ${selectedDays.length === 1 ? 'dia' : 'dias'})`}
+                            </label>
+                            <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl h-[50px]">
+                              {selectedDays.length > 0 ? (
+                                <>
+                                  <span className="text-base font-black text-primary-600 dark:text-primary-400">
+                                    {formatTime(totalTime)}
+                                  </span>
+                                  {timeUnit === 'minutos' && totalTime >= 60 && (
+                                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                                      <Clock size={13} className="text-slate-400" />
+                                      {formatMinutesToHours(totalTime)}
+                                    </span>
+                                  )}
+                                </>
+                              ) : (
+                                <span className="text-xs text-amber-500 dark:text-amber-400 font-medium">
+                                  Nenhum dia selecionado
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       ) : (
                         selectedDays.length > 0 ? (
@@ -369,7 +398,7 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
                               </thead>
                               <tbody>
                                 {WEEK_DAYS.filter(d => selectedDays.includes(d.id)).map((day, idx, arr) => (
-                                  <tr key={day.id} className={idx < arr.length - 1 ? "border-b border-slate-100 dark:border-slate-800" : ""}>
+                                  <tr key={day.id} className={idx < arr.length - 1 ?"border-b border-slate-100 dark:border-slate-800" :""}>
                                     <td className="py-3 px-4 font-medium text-slate-700 dark:text-slate-300">{day.fullName}</td>
                                     <td className="py-2 px-4 w-40">
                                       <input 
@@ -466,7 +495,7 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
                       {stretches.map((s, idx) => (
                         <tr key={s.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
                           <td className="py-3 px-4 text-center">
-                            <div className="flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex flex-col items-center">
                               <button onClick={() => moveStretch(idx, 'up')} disabled={idx === 0} className="text-slate-400 hover:text-primary-500 disabled:opacity-30 p-0.5">
                                 <ChevronRight size={14} className="-rotate-90" />
                               </button>
@@ -500,7 +529,7 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
                             />
                           </td>
                           <td className="py-3 px-6 text-right">
-                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex justify-end gap-2">
                               <button onClick={() => handleDuplicateStretch(s)} className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg" title="Duplicar">
                                 <Copy size={16} />
                               </button>
@@ -520,7 +549,7 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
                     <Move size={24} className="text-slate-400" />
                   </div>
                   <p>Nenhum alongamento configurado.</p>
-                  <p className="text-sm mt-1">Clique em "Adicionar Alongamento" para construir a rotina.</p>
+                  <p className="text-sm mt-1">Clique em"Adicionar Alongamento" para construir a rotina.</p>
                 </div>
               )}
             </div>

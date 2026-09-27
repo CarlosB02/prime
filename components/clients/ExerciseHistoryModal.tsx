@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, History, TrendingUp, Calendar, Dumbbell, Activity, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { X, History, TrendingUp, Dumbbell, Activity, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import CustomCalendarIcon from '../icons/CustomCalendarIcon';
 
 interface ExerciseHistoryModalProps {
   isOpen: boolean;
@@ -121,7 +122,7 @@ export const ExerciseHistoryModal: React.FC<ExerciseHistoryModalProps> = ({ isOp
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50">
               <div className="flex items-center gap-2 mb-2 text-slate-500 dark:text-slate-400">
-                <Calendar size={16} />
+                <CustomCalendarIcon size={16} />
                 <h4 className="text-xs font-bold uppercase tracking-wider">Último Treino</h4>
               </div>
               <p className="text-lg font-bold text-slate-800 dark:text-white">{lastWorkout.date}</p>
@@ -172,7 +173,7 @@ export const ExerciseHistoryModal: React.FC<ExerciseHistoryModalProps> = ({ isOp
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-bold text-slate-800 dark:text-white shadow-sm shrink-0">
-                        <Calendar size={18} className="text-primary-500" />
+                        <CustomCalendarIcon size={18} />
                       </div>
                       <div className="text-left">
                         <h4 className="font-bold text-slate-800 dark:text-white">{workout.date}</h4>

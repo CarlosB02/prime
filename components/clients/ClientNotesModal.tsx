@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, StickyNote, Plus, Trash2, Calendar, Clock } from 'lucide-react';
+import { X, StickyNote, Plus, Trash2, Clock } from 'lucide-react';
+import CustomCalendarIcon from '../icons/CustomCalendarIcon';
 import { Client } from '../../types';
 
 interface ClientNotesModalProps {
@@ -178,7 +179,7 @@ const ClientNotesModal: React.FC<ClientNotesModalProps> = ({ isOpen, onClose, cl
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex flex-col gap-1">
                       <div className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${colorConfig.text} opacity-70`}>
-                        <Calendar size={12} />
+                        <CustomCalendarIcon size={12} />
                         {note.date}
                       </div>
                       <div className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${colorConfig.text} opacity-70`}>
@@ -189,7 +190,7 @@ const ClientNotesModal: React.FC<ClientNotesModalProps> = ({ isOpen, onClose, cl
                     
                     <button 
                       onClick={() => handleDeleteNote(note.id)}
-                      className={`p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all ${colorConfig.hover} ${colorConfig.text}`}
+                      className={`p-1.5 rounded-lg  ${colorConfig.hover} ${colorConfig.text}`}
                       title="Eliminar nota"
                     >
                       <Trash2 size={14} />

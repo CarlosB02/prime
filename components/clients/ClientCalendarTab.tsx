@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
 import { 
-  ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, 
+  ChevronLeft, ChevronRight, Plus, 
   Activity, Dumbbell, CheckCircle2, ClipboardList, Clock, 
   X, Save, Filter, User, Utensils, FileText, Target, Flame, Heart, ArrowUpRight, TrendingUp,
   LayoutGrid
 } from 'lucide-react';
+import CustomCalendarIcon, { CustomCalendarIcon as CalendarIcon } from '../icons/CustomCalendarIcon';
+import { 
+  CustomDumbbellIcon, 
+  CustomForkKnifeIcon, 
+  CustomClipboardIcon, 
+  CustomTargetIcon 
+} from '../icons';
 import { motion, AnimatePresence } from 'motion/react';
 import { ClientTimelineTab } from './ClientTimelineTab';
 
@@ -21,14 +28,14 @@ interface CalendarEvent {
 }
 
 const EVENT_CONFIG: Record<EventType, { label: string; icon: React.ElementType; colorClass: string; bgColor: string; borderColor: string; textColor: string }> = {
-  treino: { label: 'Treino', icon: Dumbbell, colorClass: 'bg-indigo-500', bgColor: 'bg-indigo-50 dark:bg-indigo-900/30', borderColor: 'border-indigo-100 dark:border-indigo-800/50', textColor: 'text-indigo-700 dark:text-indigo-400' },
+  treino: { label: 'Treino', icon: CustomDumbbellIcon, colorClass: 'bg-indigo-500', bgColor: 'bg-indigo-50 dark:bg-indigo-900/30', borderColor: 'border-indigo-100 dark:border-indigo-800/50', textColor: 'text-indigo-700 dark:text-indigo-400' },
   cardio: { label: 'Cardio', icon: Activity, colorClass: 'bg-rose-500', bgColor: 'bg-rose-50 dark:bg-rose-900/30', borderColor: 'border-rose-100 dark:border-rose-800/50', textColor: 'text-rose-700 dark:text-rose-400' },
   sessao_pt: { label: 'Sessão PT', icon: User, colorClass: 'bg-amber-500', bgColor: 'bg-amber-50 dark:bg-amber-900/30', borderColor: 'border-amber-100 dark:border-amber-800/50', textColor: 'text-amber-700 dark:text-amber-400' },
   checkin: { label: 'Check-in', icon: CheckCircle2, colorClass: 'bg-emerald-500', bgColor: 'bg-emerald-50 dark:bg-emerald-900/30', borderColor: 'border-emerald-100 dark:border-emerald-800/50', textColor: 'text-emerald-700 dark:text-emerald-400' },
-  refeicao: { label: 'Refeições', icon: Utensils, colorClass: 'bg-orange-500', bgColor: 'bg-orange-50 dark:bg-orange-900/30', borderColor: 'border-orange-100 dark:border-orange-800/50', textColor: 'text-orange-700 dark:text-orange-400' },
-  avaliacao: { label: 'Avaliações', icon: ClipboardList, colorClass: 'bg-cyan-500', bgColor: 'bg-cyan-50 dark:bg-cyan-900/30', borderColor: 'border-cyan-100 dark:border-cyan-800/50', textColor: 'text-cyan-700 dark:text-cyan-400' },
+  refeicao: { label: 'Refeições', icon: CustomForkKnifeIcon, colorClass: 'bg-orange-500', bgColor: 'bg-orange-50 dark:bg-orange-900/30', borderColor: 'border-orange-100 dark:border-orange-800/50', textColor: 'text-orange-700 dark:text-orange-400' },
+  avaliacao: { label: 'Avaliações', icon: CustomClipboardIcon, colorClass: 'bg-cyan-500', bgColor: 'bg-cyan-50 dark:bg-cyan-900/30', borderColor: 'border-cyan-100 dark:border-cyan-800/50', textColor: 'text-cyan-700 dark:text-cyan-400' },
   registo: { label: 'Registos', icon: FileText, colorClass: 'bg-blue-500', bgColor: 'bg-blue-50 dark:bg-blue-900/30', borderColor: 'border-blue-100 dark:border-blue-800/50', textColor: 'text-blue-700 dark:text-blue-400' },
-  outro: { label: 'Outro', icon: Target, colorClass: 'bg-slate-500', bgColor: 'bg-slate-50 dark:bg-slate-800', borderColor: 'border-slate-200 dark:border-slate-700', textColor: 'text-slate-700 dark:text-slate-300' },
+  outro: { label: 'Outro', icon: CustomTargetIcon, colorClass: 'bg-slate-500', bgColor: 'bg-slate-50 dark:bg-slate-800', borderColor: 'border-slate-200 dark:border-slate-700', textColor: 'text-slate-700 dark:text-slate-300' },
 };
 
 // Mock Data
@@ -513,7 +520,7 @@ export const ClientCalendarTab: React.FC = () => {
           <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700/50">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 text-primary-600 flex items-center justify-center">
-                <Target size={20} />
+                <CustomTargetIcon size={20} />
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Adesão Geral</p>
