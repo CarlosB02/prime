@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Upload, Save, AlertCircle, FileText, Activity } from 'lucide-react';
+import { X, Upload, Save, AlertCircle, FileText, Activity, Link as LinkIcon } from 'lucide-react';
 import { Food, FoodCategory, FoodUnit } from '../../types';
 import { FOOD_CATEGORIES, FOOD_UNITS } from '../../constants';
 
@@ -24,6 +24,7 @@ const FoodModal: React.FC<FoodModalProps> = ({ isOpen, onClose, onSave, initialD
     fiber: number;
     sodium: number;
     sugar: number;
+    link: string;
     description: string;
   }>({
     name: '',
@@ -38,6 +39,7 @@ const FoodModal: React.FC<FoodModalProps> = ({ isOpen, onClose, onSave, initialD
     fiber: 0,
     sodium: 0,
     sugar: 0,
+    link: '',
     description: ''
   });
 
@@ -56,6 +58,7 @@ const FoodModal: React.FC<FoodModalProps> = ({ isOpen, onClose, onSave, initialD
         fiber: initialData.fiber || 0,
         sodium: initialData.sodium || 0,
         sugar: initialData.sugar || 0,
+        link: initialData.link || '',
         description: initialData.description || ''
       });
     } else {
@@ -72,6 +75,7 @@ const FoodModal: React.FC<FoodModalProps> = ({ isOpen, onClose, onSave, initialD
         fiber: 0,
         sodium: 0,
         sugar: 0,
+        link: '',
         description: ''
       });
     }
@@ -285,6 +289,23 @@ const FoodModal: React.FC<FoodModalProps> = ({ isOpen, onClose, onSave, initialD
                            />
                         </div>
                     </div>
+                 </div>
+              </div>
+
+              {/* Link Opcional */}
+              <div className="col-span-12">
+                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                   Link <span className="text-xs font-normal text-slate-400 dark:text-slate-500">(Opcional)</span>
+                 </label>
+                 <div className="relative">
+                   <LinkIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                   <input 
+                     type="url"
+                     value={formData.link}
+                     onChange={(e) => setFormData({...formData, link: e.target.value})}
+                     className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-white"
+                     placeholder="https://exemplo.com/informacao-nutricional-ou-compra"
+                   />
                  </div>
               </div>
 

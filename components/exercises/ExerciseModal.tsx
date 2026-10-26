@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Upload, Save, AlertCircle, Plus, Trash2, Link as LinkIcon, Video, FileText } from 'lucide-react';
 import { Exercise, ExerciseVideo, VideoType } from '../../types';
-import { MUSCLE_GROUPS, EQUIPMENT_TYPES, DIFFICULTY_LEVELS, EXERCISE_TYPES, DESCRIPTION_TEMPLATES } from '../../constants';
+import { MUSCLE_GROUPS, EQUIPMENT_TYPES, EXERCISE_TYPES, DESCRIPTION_TEMPLATES } from '../../constants';
 
 interface ExerciseModalProps {
   isOpen: boolean;
@@ -179,7 +179,7 @@ const ExerciseModal: React.FC<ExerciseModalProps> = ({ isOpen, onClose, onSave, 
                 </select>
               </div>
 
-              <div>
+              <div className="col-span-2 md:col-span-1">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Grupo Muscular</label>
                 <select 
                   value={formData.muscleGroup}
@@ -190,7 +190,7 @@ const ExerciseModal: React.FC<ExerciseModalProps> = ({ isOpen, onClose, onSave, 
                 </select>
               </div>
 
-              <div>
+              <div className="col-span-2 md:col-span-1">
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Equipamento</label>
                 <select 
                   value={formData.equipment}
@@ -199,27 +199,6 @@ const ExerciseModal: React.FC<ExerciseModalProps> = ({ isOpen, onClose, onSave, 
                 >
                   {EQUIPMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nível de Dificuldade</label>
-                <div className="flex gap-2">
-                  {DIFFICULTY_LEVELS.map((level) => (
-                    <button
-                      key={level}
-                      type="button"
-                      onClick={() => setFormData({...formData, difficulty: level as any})}
-                      className={`
-                        flex-1 py-2 text-xs font-medium rounded-lg border transition-all
-                        ${formData.difficulty === level 
-                          ? 'bg-primary-500 border-primary-500 text-white shadow-md shadow-primary-500/20' 
-                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-primary-300'}
-                      `}
-                    >
-                      {level}
-                    </button>
-                  ))}
-                </div>
               </div>
 
               {/* Videos Section */}

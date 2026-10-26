@@ -1,4 +1,4 @@
-import { Client, DashboardEvent, PendingItem, Feedback, Metric, Exercise, Food, FoodCategory, FoodUnit, Supplement, SupplementCategory, ContentItem, ContentType, ContentCategory, PaymentPlan, PromoCode } from './types';
+import { Client, DashboardEvent, PendingItem, Feedback, Metric, Exercise, Food, FoodCategory, FoodUnit, ReadyMeal, ReadyMealCategory, ReadyMealFoodItem, Supplement, SupplementCategory, ContentItem, ContentType, ContentCategory, PaymentPlan, PromoCode } from './types';
 import { 
   LayoutDashboard, 
   Users, 
@@ -59,7 +59,8 @@ export const MENU_ITEMS = [
     id: 'exercises_group',
     subItems: [
       { label: 'Exercícios', id: 'exercises' },
-      { label: 'Técnica de Exercícios', id: 'exercise_techniques' }
+      { label: 'Técnica de Exercícios', id: 'exercise_techniques' },
+      { label: 'Banco de Textos', id: 'exercise_text_bank' }
     ]
   },
   { label: 'Conteúdos', icon: CustomClipboardIcon, id: 'content' },
@@ -178,6 +179,7 @@ export const MOCK_FOODS: Food[] = [
     protein: 31,
     carbs: 0,
     fat: 3.6,
+    fiber: 0,
     isDeleted: false
   },
   {
@@ -191,36 +193,67 @@ export const MOCK_FOODS: Food[] = [
     protein: 2.7,
     carbs: 28,
     fat: 0.3,
+    fiber: 0.4,
     isDeleted: false
   },
   {
     id: '3',
-    name: 'Abacate',
-    category: 'Gordura',
-    image: 'https://images.unsplash.com/photo-1523049673856-356c64cf11d9?auto=format&fit=crop&q=80&w=200&h=200',
+    name: 'Aveia em Flocos',
+    category: 'Hidratos',
+    image: 'https://images.unsplash.com/photo-1586444248902-2f64eddc13df?auto=format&fit=crop&q=80&w=200&h=200',
     unit: 'g',
     baseQuantity: 100,
-    calories: 160,
-    protein: 2,
-    carbs: 8.5,
-    fat: 14.7,
+    calories: 389,
+    protein: 16.9,
+    carbs: 66.3,
+    fat: 6.9,
+    fiber: 10.6,
     isDeleted: false
   },
   {
     id: '4',
-    name: 'Whey Protein (Scoop)',
-    category: 'Suplementos',
-    image: 'https://images.unsplash.com/photo-1579722821273-0f6c7d44362f?auto=format&fit=crop&q=80&w=200&h=200',
+    name: 'Ovo Inteiro Cozido',
+    category: 'Proteína',
+    image: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?auto=format&fit=crop&q=80&w=200&h=200',
     unit: 'unidade',
     baseQuantity: 1,
-    calories: 120,
-    protein: 24,
-    carbs: 3,
-    fat: 1,
+    calories: 78,
+    protein: 6.5,
+    carbs: 0.6,
+    fat: 5.5,
+    fiber: 0,
     isDeleted: false
   },
   {
     id: '5',
+    name: 'Batata Doce Cozida',
+    category: 'Hidratos',
+    image: 'https://images.unsplash.com/photo-1596097635121-14b63b7a0c19?auto=format&fit=crop&q=80&w=200&h=200',
+    unit: 'g',
+    baseQuantity: 100,
+    calories: 86,
+    protein: 1.6,
+    carbs: 20,
+    fat: 0.1,
+    fiber: 3,
+    isDeleted: false
+  },
+  {
+    id: '6',
+    name: 'Azeite Extra Virgem',
+    category: 'Gordura',
+    image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=200&h=200',
+    unit: 'ml',
+    baseQuantity: 100,
+    calories: 884,
+    protein: 0,
+    carbs: 0,
+    fat: 100,
+    fiber: 0,
+    isDeleted: false
+  },
+  {
+    id: '7',
     name: 'Brócolos Cozidos',
     category: 'Vegetais',
     image: 'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?auto=format&fit=crop&q=80&w=200&h=200',
@@ -230,7 +263,386 @@ export const MOCK_FOODS: Food[] = [
     protein: 2.8,
     carbs: 7,
     fat: 0.4,
-    isDeleted: true
+    fiber: 3.3,
+    isDeleted: false
+  },
+  {
+    id: '8',
+    name: 'Pão de Forma Integral',
+    category: 'Hidratos',
+    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=200&h=200',
+    unit: 'unidade',
+    baseQuantity: 1,
+    calories: 65,
+    protein: 2.5,
+    carbs: 11,
+    fat: 0.9,
+    fiber: 1.5,
+    isDeleted: false
+  },
+  {
+    id: '9',
+    name: 'Leite Meio Gordo',
+    category: 'Laticínios',
+    image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&q=80&w=200&h=200',
+    unit: 'ml',
+    baseQuantity: 100,
+    calories: 47,
+    protein: 3.3,
+    carbs: 4.8,
+    fat: 1.6,
+    fiber: 0,
+    isDeleted: false
+  },
+  {
+    id: '10',
+    name: 'Abacate',
+    category: 'Gordura',
+    image: 'https://images.unsplash.com/photo-1523049673856-356c64cf11d9?auto=format&fit=crop&q=80&w=200&h=200',
+    unit: 'g',
+    baseQuantity: 100,
+    calories: 160,
+    protein: 2,
+    carbs: 8.5,
+    fat: 14.7,
+    fiber: 6.7,
+    isDeleted: false
+  },
+  {
+    id: '11',
+    name: 'Whey Protein (Scoop)',
+    category: 'Suplementos',
+    image: 'https://images.unsplash.com/photo-1579722821273-0f6c7d44362f?auto=format&fit=crop&q=80&w=200&h=200',
+    unit: 'unidade',
+    baseQuantity: 1,
+    calories: 120,
+    protein: 24,
+    carbs: 3,
+    fat: 1,
+    fiber: 0.5,
+    isDeleted: false
+  },
+  {
+    id: '12',
+    name: 'Salmão Grelhado',
+    category: 'Proteína',
+    image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&q=80&w=200&h=200',
+    unit: 'g',
+    baseQuantity: 100,
+    calories: 206,
+    protein: 22,
+    carbs: 0,
+    fat: 12.3,
+    fiber: 0,
+    isDeleted: false
+  },
+  {
+    id: '13',
+    name: 'Atum ao Natural',
+    category: 'Proteína',
+    image: 'https://images.unsplash.com/photo-1544943910-4c1dc44a040b?auto=format&fit=crop&q=80&w=200&h=200',
+    unit: 'g',
+    baseQuantity: 100,
+    calories: 116,
+    protein: 26,
+    carbs: 0,
+    fat: 0.8,
+    fiber: 0,
+    isDeleted: false
+  },
+  {
+    id: '14',
+    name: 'Iogurte Grego Natural 0%',
+    category: 'Laticínios',
+    image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&q=80&w=200&h=200',
+    unit: 'g',
+    baseQuantity: 100,
+    calories: 59,
+    protein: 10,
+    carbs: 3.6,
+    fat: 0.2,
+    fiber: 0,
+    isDeleted: false
+  },
+  {
+    id: '15',
+    name: 'Banana',
+    category: 'Fruta',
+    image: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&q=80&w=200&h=200',
+    unit: 'unidade',
+    baseQuantity: 1,
+    calories: 89,
+    protein: 1.1,
+    carbs: 22.8,
+    fat: 0.3,
+    fiber: 2.6,
+    isDeleted: false
+  },
+  {
+    id: '16',
+    name: 'Maçã',
+    category: 'Fruta',
+    image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&q=80&w=200&h=200',
+    unit: 'unidade',
+    baseQuantity: 1,
+    calories: 52,
+    protein: 0.3,
+    carbs: 13.8,
+    fat: 0.2,
+    fiber: 2.4,
+    isDeleted: false
+  },
+  {
+    id: '17',
+    name: 'Manteiga de Amendoim 100%',
+    category: 'Gordura',
+    image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&q=80&w=200&h=200',
+    unit: 'g',
+    baseQuantity: 100,
+    calories: 588,
+    protein: 25,
+    carbs: 20,
+    fat: 50,
+    fiber: 6,
+    isDeleted: false
+  },
+  {
+    id: '18',
+    name: 'Massa Cozida',
+    category: 'Hidratos',
+    image: 'https://images.unsplash.com/photo-1621996346565-e3d5d6281691?auto=format&fit=crop&q=80&w=200&h=200',
+    unit: 'g',
+    baseQuantity: 100,
+    calories: 158,
+    protein: 5.8,
+    carbs: 30.9,
+    fat: 0.9,
+    fiber: 1.8,
+    isDeleted: false
+  },
+  {
+    id: '19',
+    name: 'Espinafres Cozidos',
+    category: 'Vegetais',
+    image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&q=80&w=200&h=200',
+    unit: 'g',
+    baseQuantity: 100,
+    calories: 23,
+    protein: 3,
+    carbs: 3.8,
+    fat: 0.3,
+    fiber: 2.4,
+    isDeleted: false
+  },
+  {
+    id: '20',
+    name: 'Queijo Quark 0%',
+    category: 'Laticínios',
+    image: 'https://images.unsplash.com/photo-1559561853-08451507cbe7?auto=format&fit=crop&q=80&w=200&h=200',
+    unit: 'g',
+    baseQuantity: 100,
+    calories: 68,
+    protein: 12,
+    carbs: 3.5,
+    fat: 0.2,
+    fiber: 0,
+    isDeleted: false
+  }
+];
+
+export const READY_MEAL_CATEGORIES: ReadyMealCategory[] = [
+  'Pequeno-Almoço',
+  'Almoço / Jantar',
+  'Lanches',
+  'Pré / Pós-Treino',
+  'Snacks'
+];
+
+export const MOCK_READY_MEALS: ReadyMeal[] = [
+  {
+    id: 'rm-1',
+    name: 'Frango Grelhado com Arroz Basmati e Brócolos',
+    category: 'Almoço / Jantar',
+    description: 'O clássico anabólico de excelência. Digestão limpa, excelente perfil proteico e micronutrientes dos brócolos.',
+    prepTimeMinutes: 20,
+    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=600&h=400',
+    notes: 'Grelhar o peito de frango temperado com sal fino e orégãos. Servir com arroz quente e brócolos ao vapor regados com o azeite.',
+    foods: [
+      { foodId: '1', quantity: 160, measure: '160g' },
+      { foodId: '2', quantity: 180, measure: '180g' },
+      { foodId: '7', quantity: 120, measure: '120g' },
+      { foodId: '6', quantity: 10, measure: '1 c. sopa (10ml)' }
+    ],
+    calories: 628,
+    protein: 57.4,
+    carbs: 58.8,
+    fat: 16.8,
+    fiber: 4.2,
+    isDeleted: false
+  },
+  {
+    id: 'rm-2',
+    name: 'Panquecas de Aveia Proteicas com Banana',
+    category: 'Pequeno-Almoço',
+    description: 'Pequeno-almoço energético e altamente saciante com libertação gradual de energia ao longo da manhã.',
+    prepTimeMinutes: 12,
+    image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&q=80&w=600&h=400',
+    notes: 'Triturar os ovos, aveia e whey até formar massa homogénea. Cozinhar em lume brando e cobrir com rodelas de banana e canela.',
+    foods: [
+      { foodId: '3', quantity: 70, measure: '70g (7 c. sopa)' },
+      { foodId: '4', quantity: 2, measure: '2 unidades' },
+      { foodId: '11', quantity: 30, measure: '1 scoop (30g)' },
+      { foodId: '15', quantity: 1, measure: '1 unidade média' }
+    ],
+    calories: 628,
+    protein: 52.9,
+    carbs: 71.0,
+    fat: 16.4,
+    fiber: 10.2,
+    isDeleted: false
+  },
+  {
+    id: 'rm-3',
+    name: 'Salmão Fresco Grelhado com Batata Doce e Espinafres',
+    category: 'Almoço / Jantar',
+    description: 'Rico em ácidos gordos Ómega-3 para redução da inflamação e recuperação celular.',
+    prepTimeMinutes: 25,
+    image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&q=80&w=600&h=400',
+    notes: 'Selar o lombo de salmão numa frigideira quente sem gordura adicional. Acompanhar com batata doce cozida ou assada e espinafres.',
+    foods: [
+      { foodId: '9', quantity: 150, measure: '150g' },
+      { foodId: '5', quantity: 200, measure: '200g' },
+      { foodId: '19', quantity: 100, measure: '100g' }
+    ],
+    calories: 507,
+    protein: 36.2,
+    carbs: 43.8,
+    fat: 20.6,
+    fiber: 8.4,
+    isDeleted: false
+  },
+  {
+    id: 'rm-4',
+    name: 'Tostas de Pão de Centeio com Ovos Mexidos e Abacate',
+    category: 'Pequeno-Almoço',
+    description: 'Pequeno-almoço balanceado com hidratos de baixo índice glicémico e gorduras monoinsaturadas saudáveis.',
+    prepTimeMinutes: 8,
+    image: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&q=80&w=600&h=400',
+    notes: 'Torrar as fatias de centeio. Bater os ovos e mexer em lume brando. Dispor sobre as tostas com o abacate fatiado por cima.',
+    foods: [
+      { foodId: '8', quantity: 2, measure: '2 fatias (60g)' },
+      { foodId: '4', quantity: 2, measure: '2 unidades' },
+      { foodId: '13', quantity: 50, measure: '1/3 abacate (50g)' }
+    ],
+    calories: 402,
+    protein: 19.4,
+    carbs: 36.1,
+    fat: 20.5,
+    fiber: 8.1,
+    isDeleted: false
+  },
+  {
+    id: 'rm-5',
+    name: 'Bowl Proteico de Iogurte Grego, Whey e Manteiga de Amendoim',
+    category: 'Lanches',
+    description: 'Snack doce, denso e proteico, pronto em 2 minutos sem qualquer cozedura.',
+    prepTimeMinutes: 3,
+    image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&q=80&w=600&h=400',
+    notes: 'Misturar o iogurte grego com o scoop de whey até consistência de mousse. Cobrir com maçã fatiada e manteiga de amendoim.',
+    foods: [
+      { foodId: '10', quantity: 180, measure: '1 boião (180g)' },
+      { foodId: '11', quantity: 25, measure: '25g' },
+      { foodId: '17', quantity: 15, measure: '1 c. sobremesa (15g)' },
+      { foodId: '16', quantity: 1, measure: '1 maçã média' }
+    ],
+    calories: 339,
+    protein: 44.6,
+    carbs: 24.5,
+    fat: 8.4,
+    fiber: 4.2,
+    isDeleted: false
+  },
+  {
+    id: 'rm-6',
+    name: 'Batido Rápido de Recuperação Pós-Treino',
+    category: 'Pré / Pós-Treino',
+    description: 'Absorção rápida de aminoácidos essenciais e reposição imediata de glicogénio muscular pós-sessão.',
+    prepTimeMinutes: 3,
+    image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&q=80&w=600&h=400',
+    notes: 'Juntar cerca de 300ml de água fresca ou gelo, a banana, aveia e whey. Bater 30 segundos no shaker ou liquidificadora.',
+    foods: [
+      { foodId: '11', quantity: 35, measure: '35g' },
+      { foodId: '15', quantity: 1, measure: '1 unidade' },
+      { foodId: '3', quantity: 40, measure: '40g' }
+    ],
+    calories: 375,
+    protein: 39.4,
+    carbs: 50.0,
+    fat: 3.5,
+    fiber: 5.3,
+    isDeleted: false
+  },
+  {
+    id: 'rm-7',
+    name: 'Bife de Vaca Magro com Massa e Brócolos ao Azeite',
+    category: 'Almoço / Jantar',
+    description: 'Aporte substancial de ferro heme, creatina natural e hidratos de assimilação contínua para ganhos musculares.',
+    prepTimeMinutes: 20,
+    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=600&h=400',
+    notes: 'Grelhar o bife ao ponto. Envolver a massa cozida e os brócolos com um fio de azeite e pimenta preta.',
+    foods: [
+      { foodId: '14', quantity: 160, measure: '160g' },
+      { foodId: '18', quantity: 150, measure: '150g' },
+      { foodId: '7', quantity: 100, measure: '100g' },
+      { foodId: '6', quantity: 8, measure: '8ml' }
+    ],
+    calories: 676,
+    protein: 55.9,
+    carbs: 53.4,
+    fat: 25.8,
+    fiber: 4.3,
+    isDeleted: false
+  },
+  {
+    id: 'rm-8',
+    name: 'Papas de Aveia Quentes com Queijo Quark e Banana',
+    category: 'Pequeno-Almoço',
+    description: 'Cremoso, altamente nutritivo e reconfortante. Excelente digestibilidade pré ou pós-atividade física.',
+    prepTimeMinutes: 10,
+    image: 'https://images.unsplash.com/photo-1517673132405-a56a62b18caf?auto=format&fit=crop&q=80&w=600&h=400',
+    notes: 'Cozer a aveia com água e canela. Retirar do lume, envolver o queijo quark até criar creme sedoso e guarnecer com a banana.',
+    foods: [
+      { foodId: '3', quantity: 60, measure: '60g' },
+      { foodId: '20', quantity: 150, measure: '150g' },
+      { foodId: '15', quantity: 1, measure: '1 unidade' }
+    ],
+    calories: 424,
+    protein: 29.2,
+    carbs: 67.9,
+    fat: 4.7,
+    fiber: 7.8,
+    isDeleted: false
+  },
+  {
+    id: 'rm-9',
+    name: 'Wrap de Atum ao Natural com Queijo Quark e Espinafres',
+    category: 'Lanches',
+    description: 'Opção prática para transporte para o trabalho ou universidade, baixa em calorias e repleta de proteína magra.',
+    prepTimeMinutes: 5,
+    image: 'https://images.unsplash.com/photo-1509722747041-616f39b57569?auto=format&fit=crop&q=80&w=600&h=400',
+    notes: 'Escorrer o atum e misturar com o queijo quark, pimenta e sal. Espalhar no pão/wrap sobre cama de espinafres e enrolar.',
+    foods: [
+      { foodId: '12', quantity: 120, measure: '1 lata grande (120g)' },
+      { foodId: '20', quantity: 60, measure: '60g' },
+      { foodId: '8', quantity: 1, measure: '1 unidade (wrap/fatia)' },
+      { foodId: '19', quantity: 50, measure: '50g' }
+    ],
+    calories: 275,
+    protein: 42.6,
+    carbs: 19.3,
+    fat: 2.6,
+    fiber: 2.5,
+    isDeleted: false
   }
 ];
 

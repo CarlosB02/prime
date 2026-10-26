@@ -75,7 +75,7 @@ const WorkoutPlanModal: React.FC<WorkoutPlanModalProps> = ({ isOpen, onClose, on
               <input
                 type="text"
                 required
-                value={name}
+                value={name || ''}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                 placeholder="Ex: Plano Hipertrofia Avançado"
@@ -119,7 +119,7 @@ const WorkoutPlanModal: React.FC<WorkoutPlanModalProps> = ({ isOpen, onClose, on
                             </span>
                             <input
                               type="date"
-                              value={startDate}
+                              value={startDate || ''}
                               onChange={(e) => setStartDate(e.target.value)}
                               className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none transition-all text-sm"
                             />
@@ -135,7 +135,7 @@ const WorkoutPlanModal: React.FC<WorkoutPlanModalProps> = ({ isOpen, onClose, on
                             </span>
                             <input
                               type="date"
-                              value={endDate}
+                              value={endDate || ''}
                               onChange={(e) => setEndDate(e.target.value)}
                               className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none transition-all text-sm"
                             />

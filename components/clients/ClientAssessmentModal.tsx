@@ -35,6 +35,7 @@ interface ClientAssessmentModalProps {
   mode: 'add' | 'view';
   initialData?: AssessmentData;
   previousData?: AssessmentData; // for comparison
+  onSave?: (data: AssessmentData) => void;
 }
 
 const DEFAULT_MEASURES = {
@@ -48,7 +49,8 @@ export const ClientAssessmentModal: React.FC<ClientAssessmentModalProps> = ({
   onClose, 
   mode, 
   initialData,
-  previousData
+  previousData,
+  onSave
 }) => {
   const isViewMode = mode === 'view';
   
@@ -57,6 +59,23 @@ export const ClientAssessmentModal: React.FC<ClientAssessmentModalProps> = ({
   const [questions, setQuestions] = useState(initialData?.questions || '');
   const [trainerFeedback, setTrainerFeedback] = useState(initialData?.trainerFeedback || '');
   const [weight, setWeight] = useState(initialData?.weight?.toString() || '');
+
+  const handleSave = () => {
+    const dataToSave: AssessmentData = {
+      id: initialData?.id || `#${Date.now()}`,
+      date,
+      status: 'validado',
+      measures,
+      weight: parseFloat(weight) || 0,
+      questions,
+      trainerFeedback,
+      photos: initialData?.photos || []
+    };
+    if (onSave) {
+      onSave(dataToSave);
+    }
+    onClose();
+  };
   
   // For comparison mode
   const [isComparingPhotos, setIsComparingPhotos] = useState(false);
@@ -292,7 +311,7 @@ export const ClientAssessmentModal: React.FC<ClientAssessmentModalProps> = ({
               Cancelar
             </button>
             <button 
-              onClick={onClose}
+              onClick={handleSave}
               className="px-6 py-2.5 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-xl shadow-lg shadow-primary-500/20 transition-all"
             >
               Guardar Avaliação

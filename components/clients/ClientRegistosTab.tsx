@@ -1,43 +1,52 @@
 import React, { useState } from 'react';
-import { CheckCircle2 } from 'lucide-react';
-import { CustomDumbbellIcon, CustomForkKnifeIcon, CustomVitalIcon } from '../icons';
+import { CheckCircle2, HeartPulse } from 'lucide-react';
+import { CustomDumbbellIcon, CustomForkKnifeIcon, CustomVitalIcon, CustomEvolutionIcon } from '../icons';
 import { Client } from '../../types';
-import { ClientRegisterWorkoutTab } from './ClientRegisterWorkoutTab';
+import { ClientTrainingEvolutionTab } from './ClientTrainingEvolutionTab';
 import { ClientNutritionLogTab } from './ClientNutritionLogTab';
 import { ClientCardioLogTab } from './ClientCardioLogTab';
 import { ClientDailyLogsTab } from './ClientDailyLogsTab';
+import { ClientPostWorkoutLogTab } from './ClientPostWorkoutLogTab';
 
-export type RegistosSubTab = 'treino' | 'nutricao' | 'cardio' | 'habitos';
+export type RegistosSubTab = 'treino' | 'nutricao' | 'cardio' | 'pos_treino' | 'habitos';
 
 interface ClientRegistosTabProps {
   client?: Client;
   initialSubTab?: RegistosSubTab;
+  onUpdateClient?: (updatedFields: Partial<Client>) => Promise<void> | void;
 }
 
 export const ClientRegistosTab: React.FC<ClientRegistosTabProps> = ({ 
   client, 
-  initialSubTab = 'treino' 
+  initialSubTab = 'treino',
+  onUpdateClient
 }) => {
   const [subTab, setSubTab] = useState<RegistosSubTab>(initialSubTab);
 
   const subTabs = [
     {
       id: 'treino' as RegistosSubTab,
-      label: 'Registar Treino',
-      icon: CustomDumbbellIcon,
-      badge: 'Sessões de Força'
+      label: 'Treino',
+      icon: CustomEvolutionIcon || CustomDumbbellIcon,
+      badge: 'Evolução & Cargas'
     },
     {
       id: 'nutricao' as RegistosSubTab,
-      label: 'Registar Nutrição',
+      label: 'Nutrição',
       icon: CustomForkKnifeIcon,
       badge: 'Alimentação Diária'
     },
     {
       id: 'cardio' as RegistosSubTab,
-      label: 'Registos de Cardio',
+      label: 'Cardio',
       icon: CustomVitalIcon,
       badge: 'Aeróbio & Zonas'
+    },
+    {
+      id: 'pos_treino' as RegistosSubTab,
+      label: 'Pós-treino',
+      icon: HeartPulse,
+      badge: 'RPE & Feedback'
     },
     {
       id: 'habitos' as RegistosSubTab,
@@ -83,7 +92,7 @@ export const ClientRegistosTab: React.FC<ClientRegistosTabProps> = ({
       {/* Sub-tab Content */}
       <div className="transition-all duration-200">
         {subTab === 'treino' && (
-          <ClientRegisterWorkoutTab client={client} />
+          <ClientTrainingEvolutionTab client={client} onUpdateClient={onUpdateClient} />
         )}
 
         {subTab === 'nutricao' && (
@@ -92,6 +101,10 @@ export const ClientRegistosTab: React.FC<ClientRegistosTabProps> = ({
 
         {subTab === 'cardio' && (
           <ClientCardioLogTab client={client} />
+        )}
+
+        {subTab === 'pos_treino' && (
+          <ClientPostWorkoutLogTab client={client} />
         )}
 
         {subTab === 'habitos' && (

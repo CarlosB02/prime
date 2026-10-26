@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import CustomCalendarIcon from '../icons/CustomCalendarIcon';
 import { CustomAppleIcon, CustomClockIcon } from '../icons';
-import NutritionPlanBuilder from './NutritionPlanBuilder';
+import NutritionPlanBuilder, { INITIAL_PLAN } from './NutritionPlanBuilder';
 
 interface NutritionPlan {
   id: string;
@@ -28,9 +28,9 @@ interface NutritionPlan {
 }
 
 const MOCK_PLANS: NutritionPlan[] = [
-  { id: '1', name: 'Plano Hipertrofia', startDate: '2026-03-01', endDate: '2026-05-01', notes: 'Foco no ganho de massa magra.', createdAt: '2026-03-20T10:00:00Z', dayTypes: [] },
-  { id: '2', name: 'Plano Emagrecimento', startDate: '2026-01-01', endDate: '2026-03-01', notes: 'Défice calórico acentuado.', createdAt: '2025-12-28T10:00:00Z', dayTypes: [] },
-  { id: '3', name: 'Manutenção Contínua', startDate: '2026-03-15', notes: 'Manter peso estabilizado.', createdAt: '2026-03-10T10:00:00Z', dayTypes: [] },
+  { id: '1', name: 'Plano Hipertrofia', startDate: '2026-03-01', endDate: '2026-05-01', notes: 'Foco no ganho de massa magra.', createdAt: '2026-03-20T10:00:00Z', dayTypes: INITIAL_PLAN.dayTypes },
+  { id: '2', name: 'Plano Emagrecimento', startDate: '2026-01-01', endDate: '2026-03-01', notes: 'Défice calórico acentuado.', createdAt: '2025-12-28T10:00:00Z', dayTypes: INITIAL_PLAN.dayTypes },
+  { id: '3', name: 'Manutenção Contínua', startDate: '2026-03-15', notes: 'Manter peso estabilizado.', createdAt: '2026-03-10T10:00:00Z', dayTypes: INITIAL_PLAN.dayTypes },
 ];
 
 const NutritionPlansView: React.FC = () => {

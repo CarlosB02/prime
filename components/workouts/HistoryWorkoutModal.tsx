@@ -26,21 +26,27 @@ const HistoryWorkoutModal: React.FC<HistoryWorkoutModalProps> = ({ isOpen, onClo
   const [dateRange, setDateRange] = useState('Últimos 3 Meses');
 
   const processedData = useMemo(() => {
-    return MOCK_HISTORY_DATA.map(item => {
+    return MOCK_HISTORY_DATA.map((item, idx) => {
       const initial = item.week1;
       const current = item.week3;
       const diff = current - initial;
       const percent = initial > 0 ? (diff / initial) * 100 : 0;
       
+      // Substituir setas por +x e -x com valores aleatórios em azul
+      const randX = Math.floor(Math.random() * 5) + 1;
+      const isPositive = diff > 0 ? (Math.random() > 0.15) : diff < 0 ? (Math.random() > 0.85) : (idx % 2 === 0);
+      const evolution = `${isPositive ? '+' : '-'}${randX}`;
+
       return {
         ...item,
         initial,
         current,
         diff,
-        percent
+        percent,
+        evolution
       };
     }).sort((a, b) => b.current - a.current);
-  }, []);
+  }, [dateRange]);
 
   const highlights = useMemo(() => {
     let maxIncrease = processedData[0];
@@ -57,12 +63,6 @@ const HistoryWorkoutModal: React.FC<HistoryWorkoutModalProps> = ({ isOpen, onClo
   }, [processedData]);
 
   if (!isOpen || !plan) return null;
-
-  const renderTrendIcon = (percent: number) => {
-    if (percent > 0) return <TrendingUp size={16} className="text-blue-500" />;
-    if (percent < 0) return <TrendingDown size={16} className="text-blue-500" />;
-    return <Minus size={16} className="text-blue-400" />;
-  };
 
   const renderTrendColor = (percent: number) => {
     return 'text-blue-600 dark:text-blue-400';
@@ -217,7 +217,9 @@ const HistoryWorkoutModal: React.FC<HistoryWorkoutModalProps> = ({ isOpen, onClo
                                 </LineChart>
                               </ResponsiveContainer>
                             </div>
-                            {renderTrendIcon(row.percent)}
+                            <span className="text-xs sm:text-sm font-black text-blue-600 dark:text-blue-400 min-w-[28px] text-right">
+                              {row.evolution}
+                            </span>
                           </div>
                         </td>
                         <td className="py-4 px-6 text-right">

@@ -438,7 +438,7 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
                 Observações
               </h3>
               <textarea 
-                value={cardioNotes}
+                value={cardioNotes || ''}
                 onChange={(e) => setCardioNotes(e.target.value)}
                 placeholder="Ex: Fazer cardio após o treino de musculação, intensidade moderada..."
                 className="w-full h-32 px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none resize-none transition-all"
@@ -460,7 +460,7 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
                 Orientações Gerais dos Alongamentos
               </h3>
               <textarea 
-                value={stretchingNotes}
+                value={stretchingNotes || ''}
                 onChange={(e) => setStretchingNotes(e.target.value)}
                 placeholder="Insira as orientações gerais da rotina..."
                 className="w-full h-24 px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none resize-none transition-all"
@@ -506,7 +506,7 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
                           </td>
                           <td className="py-3 px-2">
                             <input 
-                              value={s.exercise}
+                              value={s.exercise || ''}
                               onChange={(e) => updateStretch(s.id, 'exercise', e.target.value)}
                               className="w-full bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 focus:bg-slate-50 dark:focus:bg-slate-800 border border-transparent focus:border-primary-500 rounded p-1.5 font-bold text-slate-800 dark:text-white outline-none text-sm transition-colors"
                               placeholder="Nome do exercício..."
@@ -514,7 +514,7 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
                           </td>
                           <td className="py-3 px-2">
                             <input 
-                              value={s.sets}
+                              value={s.sets || ''}
                               onChange={(e) => updateStretch(s.id, 'sets', e.target.value)}
                               className="w-full bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 focus:bg-slate-50 dark:focus:bg-slate-800 border border-transparent focus:border-primary-500 rounded p-1.5 text-slate-700 dark:text-slate-300 outline-none text-sm transition-colors"
                               placeholder="Séries..."
@@ -522,7 +522,7 @@ export const CardioAndStretchingConfig: React.FC<{ type?: 'cardio' | 'alongament
                           </td>
                           <td className="py-3 px-2">
                             <textarea 
-                              value={s.notes}
+                              value={s.notes || ''}
                               onChange={(e) => updateStretch(s.id, 'notes', e.target.value)}
                               className="w-full bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 focus:bg-slate-50 dark:focus:bg-slate-800 border border-transparent focus:border-primary-500 rounded p-1.5 text-slate-500 dark:text-slate-400 outline-none text-xs transition-colors resize-none h-[34px]"
                               placeholder="Observações..."

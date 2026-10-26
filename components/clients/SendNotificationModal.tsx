@@ -176,7 +176,7 @@ const SendNotificationModal: React.FC<SendNotificationModalProps> = ({ isOpen, o
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-10">
           <div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <BellRing className="text-primary-500" size={24} />
+              <CustomBellIcon className="text-primary-500" size={24} />
               Enviar Notificação
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Comunique diretamente com os seus clientes.</p>

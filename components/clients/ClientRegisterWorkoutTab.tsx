@@ -130,7 +130,7 @@ export const ClientRegisterWorkoutTab: React.FC<ClientRegisterWorkoutTabProps> =
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-bold text-slate-800 dark:text-white">Registar Treino</h3>
+        <h3 className="text-lg font-bold text-slate-800 dark:text-white">Registar Sessão de PT</h3>
         {step > 1 && (
           <button 
             onClick={() => setStep(step === 3 ? 2 : 1)}
@@ -188,7 +188,7 @@ export const ClientRegisterWorkoutTab: React.FC<ClientRegisterWorkoutTabProps> =
               </div>
               <button className="flex items-center gap-2 px-4 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-xl text-sm font-bold transition-colors shadow-sm shadow-primary-500/20">
                 <Plus size={18} />
-                Criar Novo Plano
+                Registar Novo Treino
               </button>
             </div>
 

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Search, 
   Plus, 
@@ -8,13 +8,29 @@ import {
   RotateCcw, 
   Utensils,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  ExternalLink,
+  ChefHat
 } from 'lucide-react';
 import { Food, FoodCategory } from '../../types';
 import { MOCK_FOODS, FOOD_CATEGORIES, FOOD_UNITS } from '../../constants';
 import FoodModal from './FoodModal';
+import ReadyMealsList from './ReadyMealsList';
+import { getStoredReadyMeals } from '../../lib/readyMeals';
 
 const FoodView: React.FC = () => {
+  // Navigation Tabs: 'foods' | 'ready_meals'
+  const [activeTab, setActiveTab] = useState<'foods' | 'ready_meals'>('foods');
+  const [readyMealsCount, setReadyMealsCount] = useState<number>(() => getStoredReadyMeals().length);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setReadyMealsCount(getStoredReadyMeals().filter(m => !m.isDeleted).length);
+    };
+    window.addEventListener('ready_meals_updated', handleUpdate);
+    return () => window.removeEventListener('ready_meals_updated', handleUpdate);
+  }, []);
+
   // State
   const [foods, setFoods] = useState<Food[]>(MOCK_FOODS);
   const [searchQuery, setSearchQuery] = useState('');
@@ -129,8 +145,66 @@ const FoodView: React.FC = () => {
   return (
     <div className="space-y-6 animate-fade-in pb-20">
       
-      {/* Top Toolbar */}
-      <div className="glass-card rounded-2xl p-4 flex flex-col gap-4 sticky top-0 z-20">
+      {/* Top Module Header & Tabs */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div>
+          <h1 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">
+            Base de Dados de Nutrição
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Gerencie os alimentos individuais e receitas/refeições prontas reutilizáveis
+          </p>
+        </div>
+
+        {/* Tab switch pills */}
+        <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs self-start sm:self-auto">
+          <button
+            onClick={() => setActiveTab('foods')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'foods'
+                ? 'bg-white dark:bg-slate-900 text-primary-600 dark:text-primary-400 shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Utensils size={15} />
+            <span>Alimentos</span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+              activeTab === 'foods'
+                ? 'bg-primary-50 dark:bg-primary-950/50 text-primary-600 dark:text-primary-400'
+                : 'bg-slate-200/60 dark:bg-slate-700 text-slate-500'
+            }`}>
+              {foods.filter(f => !f.isDeleted).length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('ready_meals')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'ready_meals'
+                ? 'bg-white dark:bg-slate-900 text-primary-600 dark:text-primary-400 shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <ChefHat size={15} />
+            <span>Refeições Prontas</span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+              activeTab === 'ready_meals'
+                ? 'bg-primary-50 dark:bg-primary-950/50 text-primary-600 dark:text-primary-400'
+                : 'bg-slate-200/60 dark:bg-slate-700 text-slate-500'
+            }`}>
+              {readyMealsCount}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Tab 2: Refeições Prontas */}
+      {activeTab === 'ready_meals' ? (
+        <ReadyMealsList />
+      ) : (
+        <>
+          {/* Top Toolbar */}
+          <div className="glass-card rounded-2xl p-4 flex flex-col gap-4 sticky top-0 z-20">
          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* Left: Search & Toggles */}
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
@@ -273,9 +347,23 @@ const FoodView: React.FC = () => {
                         <img src={food.image} alt={food.name} className="w-full h-full object-cover" />
                     </div>
                     <div className="min-w-0">
-                        <h3 className="font-bold text-slate-800 dark:text-white text-sm truncate" title={food.name}>
-                            {food.name}
-                        </h3>
+                        <div className="flex items-center gap-1.5">
+                          <h3 className="font-bold text-slate-800 dark:text-white text-sm truncate" title={food.name}>
+                              {food.name}
+                          </h3>
+                          {food.link && (
+                            <a 
+                              href={food.link} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              onClick={(e) => e.stopPropagation()} 
+                              className="text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors p-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
+                              title="Abrir link do alimento"
+                            >
+                              <ExternalLink size={13} />
+                            </a>
+                          )}
+                        </div>
                         <div className="block sm:hidden mt-1">
                              <span className={`px-1.5 py-0.5 rounded text-[9px] border ${getCategoryColor(food.category)}`}>
                                 {food.category}
@@ -380,6 +468,8 @@ const FoodView: React.FC = () => {
         onSave={handleSave}
         initialData={editingFood}
       />
+      </>
+      )}
     </div>
   );
 };

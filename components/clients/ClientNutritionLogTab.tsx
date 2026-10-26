@@ -112,12 +112,45 @@ const STATUS_CONFIG: Record<DayStatus, { label: string; icon: React.ElementType;
 };
 
 export const ClientNutritionLogTab: React.FC = () => {
+  const [logs, setLogs] = useState<DailyNutritionLog[]>(MOCK_LOGS);
   const [selectedDay, setSelectedDay] = useState<DailyNutritionLog | null>(null);
   const [showLegend, setShowLegend] = useState(false);
   const [expandedMeals, setExpandedMeals] = useState<Record<string, boolean>>({});
 
   const toggleMeal = (id: string) => {
     setExpandedMeals(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleAddMealLog = () => {
+    const targetDay = selectedDay || logs[0];
+    if (!targetDay) return;
+    const mealCount = targetDay.meals.length + 1;
+    const newMeal: MealLog = {
+      id: 'm_' + Date.now(),
+      name: `Refeição ${mealCount}`,
+      time: '16:00',
+      totalKcal: 350,
+      totalProtein: 25,
+      totalCarbs: 35,
+      totalFats: 10,
+      foods: [
+        { id: 'f_' + Date.now(), name: 'Iogurte Grego com Fruta e Aveia', amount: '150g', kcal: 200, protein: 15, carbs: 20, fats: 5 }
+      ]
+    };
+    const updatedMeals = [...targetDay.meals, newMeal];
+    const updatedDay: DailyNutritionLog = {
+      ...targetDay,
+      meals: updatedMeals,
+      mealsDone: targetDay.mealsDone + 1,
+      kcal: targetDay.kcal + newMeal.totalKcal,
+      protein: targetDay.protein + newMeal.totalProtein,
+      carbs: targetDay.carbs + newMeal.totalCarbs,
+      fats: targetDay.fats + newMeal.totalFats,
+      status: 'completo'
+    };
+    setSelectedDay(updatedDay);
+    setLogs(prev => prev.map(d => d.id === updatedDay.id ? updatedDay : d));
+    setExpandedMeals(prev => ({ ...prev, [newMeal.id]: true }));
   };
 
   return (
@@ -134,6 +167,12 @@ export const ClientNutritionLogTab: React.FC = () => {
           </div>
           
           <div className="flex flex-wrap items-center gap-3">
+            <button 
+              onClick={handleAddMealLog}
+              className="px-3.5 py-1.5 text-sm font-bold text-white bg-primary-600 hover:bg-primary-500 rounded-xl transition-all shadow-md shadow-primary-500/20 flex items-center gap-1.5 cursor-pointer hover:-translate-y-0.5"
+            >
+              <Plus size={16} /> Adicionar Refeição
+            </button>
             <button 
               onClick={() => setShowLegend(!showLegend)}
               className="px-3 py-1.5 text-sm font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors border border-slate-200 dark:border-slate-700 flex items-center gap-2"
@@ -226,7 +265,11 @@ export const ClientNutritionLogTab: React.FC = () => {
               </button>
             </div>
             
-            <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-sm font-bold shadow-md shadow-primary-500/20 transition-all">
+            <button 
+              type="button"
+              onClick={handleAddMealLog}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-sm font-bold shadow-md shadow-primary-500/20 transition-all cursor-pointer"
+            >
               <Plus size={16} /> Registar Refeição
             </button>
           </div>
@@ -247,7 +290,7 @@ export const ClientNutritionLogTab: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                {MOCK_LOGS.map((log) => {
+                {logs.map((log) => {
                   const status = STATUS_CONFIG[log.status];
                   const isSelected = selectedDay?.id === log.id;
                   
@@ -382,16 +425,33 @@ export const ClientNutritionLogTab: React.FC = () => {
 
             {/* Meals List */}
             <div className="p-5 max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar bg-slate-50/30 dark:bg-slate-900/20">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <Utensils size={14} /> Refeições do Dia ({selectedDay.mealsDone}/{selectedDay.plannedMeals})
-              </h4>
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                  <Utensils size={14} /> Refeições do Dia ({selectedDay.mealsDone}/{selectedDay.plannedMeals})
+                </h4>
+                <button
+                  type="button"
+                  onClick={handleAddMealLog}
+                  className="text-xs flex items-center gap-1 text-primary-600 hover:text-primary-700 dark:text-primary-400 font-bold hover:underline cursor-pointer"
+                  title="Adicionar Refeição a este dia"
+                >
+                  <Plus size={14} /> Adicionar
+                </button>
+              </div>
 
               {selectedDay.meals.length === 0 ? (
-                <div className="text-center py-10">
+                <div className="text-center py-8">
                   <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3">
                     <XCircle size={20} className="text-slate-400" />
                   </div>
-                  <p className="text-sm font-medium text-slate-500">Nenhuma refeição registada neste dia.</p>
+                  <p className="text-sm font-medium text-slate-500 mb-3">Nenhuma refeição registada neste dia.</p>
+                  <button
+                    type="button"
+                    onClick={handleAddMealLog}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-xs font-bold transition-all shadow-sm cursor-pointer"
+                  >
+                    <Plus size={14} /> Adicionar Refeição
+                  </button>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -466,6 +526,16 @@ export const ClientNutritionLogTab: React.FC = () => {
                     )
                   })}
                 </div>
+              )}
+
+              {selectedDay.meals.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleAddMealLog}
+                  className="w-full mt-3 py-2 border border-dashed border-slate-300 dark:border-slate-700 hover:border-primary-500 dark:hover:border-primary-500 rounded-xl flex items-center justify-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 font-bold text-xs bg-white/60 dark:bg-slate-800/60 hover:bg-primary-50/40 dark:hover:bg-primary-950/20 transition-all cursor-pointer shadow-2xs"
+                >
+                  <Plus size={14} /> Adicionar Refeição
+                </button>
               )}
             </div>
 

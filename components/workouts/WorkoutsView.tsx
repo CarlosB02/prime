@@ -14,7 +14,9 @@ import {
   LayoutGrid,
   List,
   History,
-  Eye
+  Eye,
+  ToggleLeft,
+  ToggleRight
 } from 'lucide-react';
 import CustomCalendarIcon from '../icons/CustomCalendarIcon';
 import { CustomDumbbellIcon } from '../icons';
@@ -42,9 +44,36 @@ export const MOCK_PLANS: WorkoutPlan[] = [
 interface WorkoutsViewProps {
   mode?: 'manage' | 'select';
   onSelectPlan?: (plan: WorkoutPlan) => void;
+  activePlanId?: string | null;
+  onToggleActivePlan?: (planId: string, plan: WorkoutPlan) => void;
+  showHistory?: boolean;
 }
 
-const WorkoutsView: React.FC<WorkoutsViewProps> = ({ mode = 'manage', onSelectPlan }) => {
+const WorkoutsView: React.FC<WorkoutsViewProps> = ({ 
+  mode = 'manage', 
+  onSelectPlan, 
+  activePlanId,
+  onToggleActivePlan,
+  showHistory = false 
+}) => {
+  const [internalActivePlanId, setInternalActivePlanId] = useState<string | null>('1');
+  const currentActivePlanId = activePlanId !== undefined ? activePlanId : internalActivePlanId;
+
+  const handleTogglePlan = (plan: WorkoutPlan, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    // Only one plan can be active at a time: if clicking current active, toggle it off, otherwise activate this one
+    const newActiveId = currentActivePlanId === plan.id ? null : plan.id;
+    if (activePlanId === undefined) {
+      setInternalActivePlanId(newActiveId);
+    }
+    if (onToggleActivePlan) {
+      onToggleActivePlan(newActiveId || '', plan);
+    }
+    if (onSelectPlan && newActiveId) {
+      onSelectPlan(plan);
+    }
+  };
+
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [plans, setPlans] = useState<WorkoutPlan[]>(MOCK_PLANS);
@@ -125,51 +154,127 @@ const WorkoutsView: React.FC<WorkoutsViewProps> = ({ mode = 'manage', onSelectPl
   }).sort(sortFn);
 
   const renderPlanCard = (plan: WorkoutPlan) => {
+    const isActive = currentActivePlanId === plan.id;
+
     return (
-      <div key={plan.id} onClick={() => mode === 'select' ? (onSelectPlan && onSelectPlan(plan)) : handleEdit(plan)} className="glass-panel border rounded-2xl p-5 transition-all duration-300 hover:shadow-lg border-primary-100 dark:border-primary-900/30 cursor-pointer">
+      <div 
+        key={plan.id} 
+        onClick={() => mode === 'select' ? handleTogglePlan(plan) : handleEdit(plan)} 
+        className={`glass-panel border rounded-2xl p-5 transition-all duration-300 hover:shadow-lg cursor-pointer ${
+          mode === 'select' && isActive
+            ? 'border-2 border-primary-500 bg-primary-500/[0.03] shadow-md shadow-primary-500/10'
+            : 'border-slate-200 dark:border-slate-800 hover:border-primary-300 dark:hover:border-primary-700'
+        }`}
+      >
         {/* Header */}
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/20">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-md transition-colors ${
+              mode === 'select' && isActive
+                ? 'bg-primary-600 text-white shadow-primary-500/25'
+                : 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-primary-500/20'
+            }`}>
               <CustomDumbbellIcon size={24} />
             </div>
             <div>
               <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100 line-clamp-1">{plan.name}</h3>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                  Em Progresso
-                </span>
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  Criado a {new Date(plan.createdAt).toLocaleDateString('pt-PT')}
-                </span>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                {mode === 'select' ? (
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                    isActive 
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-300/40' 
+                      : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                  }`}>
+                    {isActive ? <CheckCircle2 size={11} /> : null}
+                    {isActive ? 'Ativo' : 'Inativo'}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                    Em Progresso
+                  </span>
+                )}
+                {plan.startDate && plan.endDate ? (
+                  <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                    <CustomCalendarIcon size={12} />
+                    {new Date(plan.startDate).toLocaleDateString('pt-PT')} - {new Date(plan.endDate).toLocaleDateString('pt-PT')}
+                    {(() => {
+                      const d1 = new Date(plan.startDate).getTime();
+                      const d2 = new Date(plan.endDate).getTime();
+                      const days = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+                      if (days <= 0) return null;
+                      const w = Math.floor(days / 7);
+                      const rem = days % 7;
+                      const txt = w > 0 && rem === 0 ? `${w} sem / ${days} d` : `${days} d`;
+                      return <span className="text-[10px] font-semibold text-primary-600 dark:text-primary-400">({txt})</span>;
+                    })()}
+                  </span>
+                ) : (
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    Criado a {new Date(plan.createdAt).toLocaleDateString('pt-PT')}
+                  </span>
+                )}
               </div>
             </div>
           </div>
           
-          <div className="flex items-center gap-1">
-            {mode === 'select' ? (
+          <div className="flex items-center gap-1 flex-wrap">
+            {mode === 'select' && (
               <button 
-                onClick={(e) => { e.stopPropagation(); onSelectPlan && onSelectPlan(plan); }} 
-                className="px-4 py-2 bg-primary-50 text-primary-600 hover:bg-primary-100 dark:bg-primary-900/20 dark:text-primary-400 dark:hover:bg-primary-900/40 rounded-xl font-bold text-sm transition-colors"
+                type="button"
+                role="switch"
+                aria-checked={isActive}
+                onClick={(e) => handleTogglePlan(plan, e)} 
+                className={`flex items-center gap-1.5 p-1 rounded-xl transition-all active:scale-95 cursor-pointer mr-1.5 ${
+                  isActive 
+                    ? 'text-primary-600 dark:text-primary-400' 
+                    : 'text-slate-300 dark:text-slate-600 hover:text-slate-400 dark:hover:text-slate-500'
+                }`}
+                title={isActive ? 'Desativar este plano' : 'Ativar este plano'}
               >
-                Selecionar
+                {isActive ? (
+                  <ToggleRight size={40} className="text-primary-600 dark:text-primary-400" />
+                ) : (
+                  <ToggleLeft size={40} />
+                )}
+                <span className={`text-xs font-bold ${
+                  isActive 
+                    ? 'text-primary-600 dark:text-primary-400' 
+                    : 'text-slate-400 dark:text-slate-500'
+                }`}>
+                  {isActive ? 'Ativo' : 'Off'}
+                </span>
               </button>
-            ) : (
-              <>
-                <button onClick={(e) => { e.stopPropagation(); setHistoryPlan(plan); }} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
-                  <History size={16} />
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); setViewPlan(plan); }} className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors">
-                  <Eye size={16} />
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); handleEdit(plan); }} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
-                  <Edit2 size={16} />
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); handleDelete(plan.id); }} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
-                  <Trash2 size={16} />
-                </button>
-              </>
             )}
+            {showHistory && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); setHistoryPlan(plan); }} 
+                title="Histórico / Análise de Volume"
+                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+              >
+                <History size={16} />
+              </button>
+            )}
+            <button 
+              onClick={(e) => { e.stopPropagation(); setViewPlan(plan); }} 
+              title="Visualizar"
+              className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+            >
+              <Eye size={16} />
+            </button>
+            <button 
+              onClick={(e) => { e.stopPropagation(); handleEdit(plan); }} 
+              title="Editar"
+              className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+            >
+              <Edit2 size={16} />
+            </button>
+            <button 
+              onClick={(e) => { e.stopPropagation(); handleDelete(plan.id); }} 
+              title="Eliminar"
+              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
+            >
+              <Trash2 size={16} />
+            </button>
           </div>
         </div>
 
@@ -236,52 +341,121 @@ const WorkoutsView: React.FC<WorkoutsViewProps> = ({ mode = 'manage', onSelectPl
   };
 
   const renderCompactPlanRow = (plan: WorkoutPlan) => {
+    const isActive = currentActivePlanId === plan.id;
+
     return (
-      <div key={plan.id} onClick={() => mode === 'select' ? (onSelectPlan && onSelectPlan(plan)) : handleEdit(plan)} className="flex items-center justify-between p-4 glass-panel border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors opacity-80 cursor-pointer">
+      <div 
+        key={plan.id} 
+        onClick={() => mode === 'select' ? handleTogglePlan(plan) : handleEdit(plan)} 
+        className={`flex items-center justify-between p-4 glass-panel border rounded-xl transition-all cursor-pointer ${
+          mode === 'select' && isActive
+            ? 'border-2 border-primary-500 bg-primary-500/[0.03] shadow-sm'
+            : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+        }`}
+      >
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0">
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+            mode === 'select' && isActive
+              ? 'bg-primary-600 text-white shadow-sm'
+              : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+          }`}>
             <CustomDumbbellIcon size={20} />
           </div>
           <div>
             <h3 className="font-semibold text-slate-800 dark:text-slate-200">{plan.name}</h3>
             <div className="flex items-center gap-3 mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded font-bold uppercase tracking-wider bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                Concluído
-              </span>
+              {mode === 'select' ? (
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[10px] uppercase tracking-wider ${
+                  isActive 
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-300/40' 
+                    : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                }`}>
+                  {isActive && <CheckCircle2 size={10} />}
+                  {isActive ? 'Ativo' : 'Inativo'}
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded font-bold uppercase tracking-wider bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                  Concluído
+                </span>
+              )}
               {plan.startDate && plan.endDate && (
                 <span className="flex items-center gap-1">
                   <CustomCalendarIcon size={12} />
                   {new Date(plan.startDate).toLocaleDateString('pt-PT')} - {new Date(plan.endDate).toLocaleDateString('pt-PT')}
+                  {(() => {
+                    const d1 = new Date(plan.startDate).getTime();
+                    const d2 = new Date(plan.endDate).getTime();
+                    const days = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+                    if (days <= 0) return null;
+                    const w = Math.floor(days / 7);
+                    const rem = days % 7;
+                    const txt = w > 0 && rem === 0 ? `${w} sem / ${days} d` : `${days} d`;
+                    return <span className="text-[10px] font-semibold text-primary-600 dark:text-primary-400">({txt})</span>;
+                  })()}
                 </span>
               )}
             </div>
           </div>
         </div>
         
-        <div className="flex items-center gap-1">
-          {mode === 'select' ? (
+        <div className="flex items-center gap-1 flex-wrap">
+          {mode === 'select' && (
             <button 
-              onClick={() => onSelectPlan && onSelectPlan(plan)} 
-              className="px-4 py-2 bg-primary-50 text-primary-600 hover:bg-primary-100 dark:bg-primary-900/20 dark:text-primary-400 dark:hover:bg-primary-900/40 rounded-xl font-bold text-sm transition-colors"
+              type="button"
+              role="switch"
+              aria-checked={isActive}
+              onClick={(e) => handleTogglePlan(plan, e)} 
+              className={`flex items-center gap-1.5 p-1 rounded-xl transition-all active:scale-95 cursor-pointer mr-2 ${
+                isActive 
+                  ? 'text-primary-600 dark:text-primary-400' 
+                  : 'text-slate-300 dark:text-slate-600 hover:text-slate-400 dark:hover:text-slate-500'
+              }`}
+              title={isActive ? 'Desativar este plano' : 'Ativar este plano'}
             >
-              Selecionar
+              {isActive ? (
+                <ToggleRight size={40} className="text-primary-600 dark:text-primary-400" />
+              ) : (
+                <ToggleLeft size={40} />
+              )}
+              <span className={`text-xs font-bold hidden sm:inline ${
+                isActive 
+                  ? 'text-primary-600 dark:text-primary-400' 
+                  : 'text-slate-400 dark:text-slate-500'
+              }`}>
+                {isActive ? 'Ativo' : 'Off'}
+              </span>
             </button>
-          ) : (
-            <>
-              <button onClick={(e) => { e.stopPropagation(); setHistoryPlan(plan); }} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
-                <History size={16} />
-              </button>
-              <button onClick={(e) => { e.stopPropagation(); setViewPlan(plan); }} className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors">
-                <Eye size={16} />
-              </button>
-              <button onClick={(e) => { e.stopPropagation(); handleEdit(plan); }} className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
-                <Edit2 size={16} />
-              </button>
-              <button onClick={(e) => { e.stopPropagation(); handleDelete(plan.id); }} className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors">
-                <Trash2 size={16} />
-              </button>
-            </>
           )}
+          {showHistory && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); setHistoryPlan(plan); }} 
+              title="Histórico / Análise de Volume"
+              className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+            >
+              <History size={16} />
+            </button>
+          )}
+          <button 
+            onClick={(e) => { e.stopPropagation(); setViewPlan(plan); }} 
+            title="Visualizar"
+            className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+          >
+            <Eye size={16} />
+          </button>
+          <button 
+            onClick={(e) => { e.stopPropagation(); handleEdit(plan); }} 
+            title="Editar"
+            className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+          >
+            <Edit2 size={16} />
+          </button>
+          <button 
+            onClick={(e) => { e.stopPropagation(); handleDelete(plan.id); }} 
+            title="Eliminar"
+            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
       </div>
     );

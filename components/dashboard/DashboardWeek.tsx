@@ -108,7 +108,7 @@ export function DashboardWeek({ onNavigate }: { onNavigate: (v: string, id?: str
                 </span>
               </div>
               
-              <div className="p-2 space-y-2 min-h-[120px] flex-1">
+              <div className="p-2 space-y-2 min-h-[185px] flex-1 flex flex-col">
                 {dayEvents.map(e => (
                   <div 
                     key={e.id}
@@ -125,7 +125,7 @@ export function DashboardWeek({ onNavigate }: { onNavigate: (v: string, id?: str
                 ))}
                 
                 {dayEvents.length === 0 && (
-                  <div className="h-full flex items-center justify-center opacity-50">
+                  <div className="flex-1 flex items-center justify-center opacity-50 py-6">
                     <span className="text-[10px] text-slate-400 font-medium">Sem eventos</span>
                   </div>
                 )}

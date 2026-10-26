@@ -9,36 +9,35 @@ import {
   XCircle
 } from 'lucide-react';
 import ExerciseTechniqueModal from './ExerciseTechniqueModal';
-
-// Mock Data
-const MOCK_TECHNIQUES = [
-  { id: '1', name: 'Drop Set', acronym: 'DS', defaultVolume: 1, description: 'Redução de carga após falha muscular.', isActive: true },
-  { id: '2', name: 'Rest Pause', acronym: 'RP', defaultVolume: 1, description: 'Pausa curta entre repetições.', isActive: true },
-  { id: '3', name: 'Bi-Set', acronym: 'BS', defaultVolume: 2, description: 'Dois exercícios sem descanso.', isActive: false },
-];
+import { getRegisteredTechniques, saveRegisteredTechniques, ExerciseTechnique } from '../../lib/techniques';
 
 const ExerciseTechniquesView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTechnique, setEditingTechnique] = useState<any>(null);
-  const [techniques, setTechniques] = useState(MOCK_TECHNIQUES);
+  const [editingTechnique, setEditingTechnique] = useState<ExerciseTechnique | null>(null);
+  const [techniques, setTechniques] = useState<ExerciseTechnique[]>(() => getRegisteredTechniques());
 
-  const handleSaveTechnique = (newTechnique: any) => {
+  const handleSaveTechnique = (newTechnique: ExerciseTechnique) => {
+    let updated: ExerciseTechnique[];
     if (editingTechnique) {
-      setTechniques(techniques.map(t => t.id === newTechnique.id ? newTechnique : t));
+      updated = techniques.map(t => t.id === newTechnique.id ? newTechnique : t);
     } else {
-      setTechniques([newTechnique, ...techniques]);
+      updated = [newTechnique, ...techniques];
     }
+    setTechniques(updated);
+    saveRegisteredTechniques(updated);
   };
 
-  const handleEdit = (technique: any) => {
+  const handleEdit = (technique: ExerciseTechnique) => {
     setEditingTechnique(technique);
     setIsModalOpen(true);
   };
 
   const handleDelete = (id: string) => {
     if (confirm('Tem a certeza que deseja eliminar esta técnica?')) {
-      setTechniques(techniques.filter(t => t.id !== id));
+      const updated = techniques.filter(t => t.id !== id);
+      setTechniques(updated);
+      saveRegisteredTechniques(updated);
     }
   };
 

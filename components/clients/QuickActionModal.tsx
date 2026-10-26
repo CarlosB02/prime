@@ -137,7 +137,7 @@ const QuickActionModal: React.FC<QuickActionModalProps> = ({ type, isOpen, onClo
                     <p className="text-xs text-slate-500 dark:text-slate-400">{client.plan}</p>
                   </div>
                 </div>
-                <Gift className="text-purple-500 opacity-20" size={24} />
+                <CustomGiftIcon className="text-purple-500 opacity-20" size={24} />
               </div>
 
               {activeMessageClient === client.id ? (

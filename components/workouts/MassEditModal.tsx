@@ -72,7 +72,7 @@ export function MassEditModal({ isOpen, onClose, exercises, onApply }: MassEditM
         {changes[field].type !== 'none' && (
           <input
             type="text"
-            value={changes[field].value}
+            value={changes[field].value || ''}
             onChange={(e) => setChanges(prev => ({ ...prev, [field]: { ...prev[field], value: e.target.value } }))}
             placeholder={changes[field].type === 'add' ? 'Ex: +1, -10s' : 'Novo valor...'}
             className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-primary-500"

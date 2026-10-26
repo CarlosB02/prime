@@ -5,12 +5,15 @@
       "description": "Represents a client in the system.",
       "type": "object",
       "properties": {
+        "id": { "type": "string" },
         "name": { "type": "string", "maxLength": 100 },
         "avatar": { "type": "string" },
         "plan": { "type": "string" },
         "status": { "type": "string", "enum": ["active", "pending", "inactive", "completed", "warning"] },
         "lastActive": { "type": "string" },
         "contact": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
         "progress": { "type": "number" },
         "evaluationStatus": { "type": "string", "enum": ["por_validar", "pendente", "concluida"] },
         "isNew": { "type": "boolean" },
@@ -21,11 +24,39 @@
         "isPaying": { "type": "boolean" },
         "hasSubscription": { "type": "boolean" },
         "nextEvaluationDate": { "type": "string" },
+        "objetivo": { "type": "string" },
+        "estrategia": { "type": "string" },
+        "targetEndDate": { "type": "string" },
+        "targetNotes": { "type": "string" },
+        "visibleToClient": { "type": "boolean" },
+        "trainingNote": { "type": "string" },
+        "exerciseNote": { "type": "string" },
+        "examesEnabled": { "type": "boolean" },
+        "timelineEnabled": { "type": "boolean" },
         "ownerId": { "type": "string", "description": "The PT who owns this client" },
         "createdAt": { "type": "string" },
         "updatedAt": { "type": "string" }
       },
-      "required": ["name", "ownerId", "createdAt"]
+      "required": ["name", "createdAt"]
+    },
+    "Evaluation": {
+      "title": "Evaluation",
+      "description": "Physical assessment record for a client",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "weight": { "type": "number" },
+        "bodyFat": { "type": "number" },
+        "muscleMass": { "type": "number" },
+        "visceralFat": { "type": "number" },
+        "chest": { "type": "number" },
+        "waist": { "type": "number" },
+        "arms": { "type": "number" },
+        "thighs": { "type": "number" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["date"]
     },
     "Exercise": {
       "title": "Exercise",
@@ -45,13 +76,17 @@
         "ownerId": { "type": "string" },
         "createdAt": { "type": "string" }
       },
-      "required": ["name", "ownerId", "createdAt"]
+      "required": ["name"]
     }
   },
   "firestore": {
     "clients/{clientId}": {
       "schema": { "$ref": "#/entities/Client" },
       "description": "Stores client records for personal trainers."
+    },
+    "clients/{clientId}/evaluations/{evaluationId}": {
+      "schema": { "$ref": "#/entities/Evaluation" },
+      "description": "Physical assessment history for a client."
     },
     "exercises/{exerciseId}": {
       "schema": { "$ref": "#/entities/Exercise" },

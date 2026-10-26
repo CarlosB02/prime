@@ -25,14 +25,14 @@ const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
       
       <DashboardMetrics />
       
+      <div className="w-full">
+        <DashboardWeek onNavigate={handleNavigate} />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <DashboardMessages onNavigate={handleNavigate} />
         <DashboardCommunity onNavigate={handleNavigate} />
         <DashboardToReview onNavigate={handleNavigate} />
-      </div>
-      
-      <div className="w-full">
-        <DashboardWeek onNavigate={handleNavigate} />
       </div>
     </div>
   );

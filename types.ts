@@ -26,6 +26,30 @@ export interface Client {
   nextEvaluationDate?: string; // YYYY-MM-DD
   ownerId?: string;
   createdAt?: any;
+  objetivo?: string;
+  estrategia?: string;
+  targetEndDate?: string;
+  targetNotes?: string;
+  visibleToClient?: boolean;
+  trainingNote?: string;
+  exerciseNote?: string;
+  examesEnabled?: boolean;
+  timelineEnabled?: boolean;
+  height?: number;
+  weight?: number;
+  workoutPreferences?: {
+    likes?: string[];
+    dislikes?: string[];
+    painExercises?: string[];
+  };
+  nutritionPreferences?: {
+    likes?: string[];
+    dislikes?: string[];
+    intolerances?: string[];
+    allergies?: string[];
+  };
+  assignedPt?: string;
+  assignedNutri?: string;
 }
 
 export interface DashboardEvent {
@@ -105,7 +129,33 @@ export interface Food {
   sugar?: number;
   sodium?: number;
   description?: string;
+  link?: string;
   isDeleted: boolean;
+}
+
+export type ReadyMealCategory = 'Pequeno-Almoço' | 'Almoço / Jantar' | 'Lanches' | 'Pré / Pós-Treino' | 'Snacks';
+
+export interface ReadyMealFoodItem {
+  foodId: string;
+  quantity: number;
+  measure?: string;
+}
+
+export interface ReadyMeal {
+  id: string;
+  name: string;
+  category: ReadyMealCategory;
+  description?: string;
+  prepTimeMinutes?: number;
+  image?: string;
+  notes?: string;
+  foods: ReadyMealFoodItem[];
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber?: number;
+  isDeleted?: boolean;
 }
 
 export type SupplementCategory = 'Proteína' | 'Creatina' | 'Pré-Treino' | 'Vitaminas' | 'Recuperação' | 'Perda de Peso' | 'Saúde Geral' | 'Outros';

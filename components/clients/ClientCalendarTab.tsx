@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ChevronLeft, ChevronRight, Plus, 
   Activity, Dumbbell, CheckCircle2, ClipboardList, Clock, 
@@ -38,19 +38,35 @@ const EVENT_CONFIG: Record<EventType, { label: string; icon: React.ElementType; 
   outro: { label: 'Outro', icon: CustomTargetIcon, colorClass: 'bg-slate-500', bgColor: 'bg-slate-50 dark:bg-slate-800', borderColor: 'border-slate-200 dark:border-slate-700', textColor: 'text-slate-700 dark:text-slate-300' },
 };
 
-// Mock Data
-const MOCK_EVENTS: CalendarEvent[] = [
-  { id: '1', date: '2026-04-10', type: 'treino', title: 'Treino Pernas', time: '10:00', details: 'Foco em quadríceps', completed: true },
-  { id: '2', date: '2026-04-10', type: 'refeicao', title: 'Refeição Livre', time: '20:00', completed: true },
-  { id: '3', date: '2026-04-12', type: 'cardio', title: 'Corrida 5km', time: '18:30', details: 'Passadeira', completed: true },
-  { id: '4', date: '2026-04-14', type: 'avaliacao', title: 'Avaliação Física', time: '09:00' },
-  { id: '5', date: '2026-04-15', type: 'treino', title: 'Costas/Bíceps', time: '11:00' },
-  { id: '6', date: '2026-04-15', type: 'checkin', title: 'Check-in Semanal', completed: true },
-  { id: '7', date: '2026-04-16', type: 'registo', title: 'Registo Diário' },
-  { id: '8', date: '2026-04-16', type: 'sessao_pt', title: 'Sessão PT', time: '14:00' },
-  { id: '9', date: '2026-04-18', type: 'cardio', title: 'Ciclismo', time: '08:00' },
-  { id: '10', date: '2026-04-18', type: 'outro', title: 'Descanso Ativo' },
-];
+// Mock Data Helper
+const generateInitialEvents = (): CalendarEvent[] => {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+
+  return [
+    { id: '1', date: `${y}-${m}-02`, type: 'treino', title: 'Treino Pernas & Glúteos', time: '10:00', details: 'Foco em quadríceps e carga progressiva', completed: true },
+    { id: '2', date: `${y}-${m}-04`, type: 'cardio', title: 'Corrida Z2 5km', time: '18:30', details: 'Passadeira inclinada 1.5%', completed: true },
+    { id: '3', date: `${y}-${m}-06`, type: 'sessao_pt', title: 'Sessão PT Acompanhada', time: '11:00', details: 'Correção técnica de agachamento', completed: true },
+    { id: '4', date: `${y}-${m}-08`, type: 'checkin', title: 'Check-in Semanal #1', time: '09:00', details: 'Fotos e pesagem em jejum', completed: true },
+    { id: '5', date: `${y}-${m}-09`, type: 'treino', title: 'Treino Costas & Bíceps', time: '10:30', details: 'Volume acumulado 16 séries', completed: true },
+    { id: '6', date: `${y}-${m}-11`, type: 'refeicao', title: 'Refeição Livre / Refeed', time: '20:00', details: 'Carb-load controlado', completed: true },
+    { id: '7', date: `${y}-${m}-13`, type: 'treino', title: 'Treino Peito & Tríceps', time: '18:00', details: 'Sessão intensa', completed: true },
+    { id: '8', date: `${y}-${m}-15`, type: 'avaliacao', title: 'Avaliação Física Periódica', time: '09:30', details: 'Bioimpedância e perímetros', completed: false },
+    { id: '9', date: `${y}-${m}-16`, type: 'cardio', title: 'Ciclismo Indoor 45min', time: '08:00', details: 'Z2 cardio contínuo', completed: true },
+    { id: '10', date: `${y}-${m}-18`, type: 'checkin', title: 'Check-in Semanal #2', time: '10:00', completed: false },
+    { id: '11', date: `${y}-${m}-20`, type: 'treino', title: 'Treino Inferiores', time: '17:30', completed: false },
+    { id: '12', date: `${y}-${m}-22`, type: 'registo', title: 'Registo de Métricas Diárias', time: '21:00', completed: false },
+    { id: '13', date: `${y}-${m}-25`, type: 'sessao_pt', title: 'Sessão PT Hipertrofia', time: '15:00', completed: false },
+    // April 2026 for compatibility
+    { id: 'm1', date: '2026-04-10', type: 'treino', title: 'Treino Pernas', time: '10:00', details: 'Foco em quadríceps', completed: true },
+    { id: 'm2', date: '2026-04-10', type: 'refeicao', title: 'Refeição Livre', time: '20:00', completed: true },
+    { id: 'm3', date: '2026-04-12', type: 'cardio', title: 'Corrida 5km', time: '18:30', details: 'Passadeira', completed: true },
+    { id: 'm4', date: '2026-04-14', type: 'avaliacao', title: 'Avaliação Física', time: '09:00' },
+    { id: 'm5', date: '2026-04-15', type: 'treino', title: 'Costas/Bíceps', time: '11:00' },
+    { id: 'm6', date: '2026-04-15', type: 'checkin', title: 'Check-in Semanal', completed: true }
+  ];
+};
 
 const MONTH_NAMES = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
@@ -59,13 +75,34 @@ const MONTH_NAMES = [
 
 const WEEK_DAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
-export const ClientCalendarTab: React.FC = () => {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1)); // April 2026 as default for mock
+interface ClientCalendarTabProps {
+  timelineEnabled?: boolean;
+}
+
+export const ClientCalendarTab: React.FC<ClientCalendarTabProps> = ({ timelineEnabled = true }) => {
+  const [currentDate, setCurrentDate] = useState(() => new Date());
+  const [eventsList, setEventsList] = useState<CalendarEvent[]>(generateInitialEvents);
   const [activeSubTab, setActiveSubTab] = useState<'calendario' | 'timeline'>('calendario');
+
+  // If timeline gets disabled while active, switch back to calendario
+  useEffect(() => {
+    if (!timelineEnabled && activeSubTab === 'timeline') {
+      setActiveSubTab('calendario');
+    }
+  }, [timelineEnabled, activeSubTab]);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [selectedDayEvents, setSelectedDayEvents] = useState<{date: string, events: CalendarEvent[]} | null>(null);
   const [modalDefaultDate, setModalDefaultDate] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+
+  // New Event Form State
+  const [newEvent, setNewEvent] = useState({
+    type: 'treino' as EventType,
+    title: '',
+    date: '',
+    time: '',
+    details: ''
+  });
   
   const [filters, setFilters] = useState<Record<EventType, boolean>>({
     treino: true, cardio: true, sessao_pt: true, checkin: true, 
@@ -94,7 +131,24 @@ export const ClientCalendarTab: React.FC = () => {
   const getEventsForDate = (day: number, isCurrentMonth: boolean) => {
     if (!isCurrentMonth) return [];
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return MOCK_EVENTS.filter(e => e.date === dateStr && filters[e.type]);
+    return eventsList.filter(e => e.date === dateStr && filters[e.type]);
+  };
+
+  const handleAddEvent = () => {
+    if (!newEvent.title.trim()) return;
+    const dateToUse = newEvent.date || modalDefaultDate || `${year}-${String(month + 1).padStart(2, '0')}-01`;
+    const createdEvent: CalendarEvent = {
+      id: String(Date.now()),
+      type: newEvent.type,
+      title: newEvent.title.trim(),
+      date: dateToUse,
+      time: newEvent.time || undefined,
+      details: newEvent.details.trim() || undefined,
+      completed: false
+    };
+    setEventsList(prev => [...prev, createdEvent]);
+    setIsEventModalOpen(false);
+    setNewEvent({ type: 'treino', title: '', date: '', time: '', details: '' });
   };
 
   const toggleFilter = (type: EventType) => {
@@ -142,13 +196,15 @@ export const ClientCalendarTab: React.FC = () => {
           Calendário
           {activeSubTab === 'calendario' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-600 dark:bg-primary-400 rounded-t-full"></div>}
         </button>
-        <button 
-          onClick={() => setActiveSubTab('timeline')}
-          className={`pb-4 text-sm font-bold transition-colors relative whitespace-nowrap ${activeSubTab === 'timeline' ? 'text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-        >
-          Timeline
-          {activeSubTab === 'timeline' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-600 dark:bg-primary-400 rounded-t-full"></div>}
-        </button>
+        {timelineEnabled && (
+          <button 
+            onClick={() => setActiveSubTab('timeline')}
+            className={`pb-4 text-sm font-bold transition-colors relative whitespace-nowrap ${activeSubTab === 'timeline' ? 'text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+          >
+            Timeline
+            {activeSubTab === 'timeline' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-600 dark:bg-primary-400 rounded-t-full"></div>}
+          </button>
+        )}
       </div>
 
       {activeSubTab === 'calendario' && (
@@ -227,10 +283,12 @@ export const ClientCalendarTab: React.FC = () => {
             
             <button 
               onClick={() => {
-                setModalDefaultDate(null);
+                const todayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(Math.min(new Date().getDate(), daysInMonth)).padStart(2, '0')}`;
+                setModalDefaultDate(todayStr);
+                setNewEvent({ type: 'treino', title: '', date: todayStr, time: '', details: '' });
                 setIsEventModalOpen(true);
               }}
-              className="flex items-center gap-2 px-4 py-1.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-sm font-bold shadow-md shadow-primary-500/20 transition-all"
+              className="flex items-center gap-2 px-4 py-1.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-sm font-bold shadow-md shadow-primary-500/20 transition-all cursor-pointer"
             >
               <Plus size={16} />
               <span className="hidden sm:inline">Novo Evento</span>
@@ -656,7 +714,11 @@ export const ClientCalendarTab: React.FC = () => {
               <div className="p-6 space-y-5">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Tipo de Evento</label>
-                  <select className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all">
+                  <select 
+                    value={newEvent.type}
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, type: e.target.value as EventType }))}
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                  >
                     {Object.entries(EVENT_CONFIG).map(([type, config]) => (
                       <option key={type} value={type}>{config.label}</option>
                     ))}
@@ -667,6 +729,8 @@ export const ClientCalendarTab: React.FC = () => {
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Título</label>
                   <input 
                     type="text" 
+                    value={newEvent.title}
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="Ex: Treino de Pernas"
                     className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                   />
@@ -677,7 +741,8 @@ export const ClientCalendarTab: React.FC = () => {
                     <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Data</label>
                     <input 
                       type="date" 
-                      defaultValue={modalDefaultDate || `${year}-${String(month+1).padStart(2, '0')}-01`}
+                      value={newEvent.date || modalDefaultDate || `${year}-${String(month+1).padStart(2, '0')}-01`}
+                      onChange={(e) => setNewEvent(prev => ({ ...prev, date: e.target.value }))}
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                     />
                   </div>
@@ -685,6 +750,8 @@ export const ClientCalendarTab: React.FC = () => {
                     <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Hora (Opcional)</label>
                     <input 
                       type="time" 
+                      value={newEvent.time}
+                      onChange={(e) => setNewEvent(prev => ({ ...prev, time: e.target.value }))}
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                     />
                   </div>
@@ -694,6 +761,8 @@ export const ClientCalendarTab: React.FC = () => {
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Detalhes (Opcional)</label>
                   <textarea 
                     rows={3}
+                    value={newEvent.details}
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, details: e.target.value }))}
                     placeholder="Notas adicionais..."
                     className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none transition-all resize-none"
                   />
@@ -708,7 +777,8 @@ export const ClientCalendarTab: React.FC = () => {
                   Cancelar
                 </button>
                 <button 
-                  className="flex items-center gap-2 px-6 py-2 bg-primary-600 hover:bg-primary-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-primary-500/20 transition-all"
+                  onClick={handleAddEvent}
+                  className="flex items-center gap-2 px-6 py-2 bg-primary-600 hover:bg-primary-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-primary-500/20 transition-all cursor-pointer"
                 >
                   <Save size={16} />
                   Guardar
@@ -721,7 +791,7 @@ export const ClientCalendarTab: React.FC = () => {
         </div>
       )}
 
-      {activeSubTab === 'timeline' && (
+      {timelineEnabled && activeSubTab === 'timeline' && (
         <ClientTimelineTab />
       )}
     </div>

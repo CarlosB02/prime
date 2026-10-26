@@ -10,6 +10,7 @@ import FinanceView from './components/finance/FinanceView';
 import WorkoutsView from './components/workouts/WorkoutsView';
 import ExercisesView from './components/exercises/ExercisesView';
 import ExerciseTechniquesView from './components/exercises/ExerciseTechniquesView';
+import ExerciseTextBankView from './components/exercises/ExerciseTextBankView';
 import FoodView from './components/nutrition/FoodView';
 import NutritionPlansView from './components/nutrition_plans/NutritionPlansView';
 import SupplementsView from './components/supplements/SupplementsView';
@@ -57,6 +58,7 @@ const App: React.FC = () => {
       case 'team': return 'Equipa';
       case 'exercises': return 'Base de Exercícios';
       case 'exercise_techniques': return 'Técnica de Exercícios';
+      case 'exercise_text_bank': return 'Banco de Textos de Exercícios';
       case 'nutrition': return 'Alimentos';
       case 'nutrition_plans': return 'Planos de Nutrição';
       case 'supplements': return 'Catálogo de Suplementos';
@@ -87,6 +89,7 @@ const App: React.FC = () => {
       case 'workouts': return <WorkoutsView />;
       case 'exercises': return <ExercisesView />;
       case 'exercise_techniques': return <ExerciseTechniquesView />;
+      case 'exercise_text_bank': return <ExerciseTextBankView />;
       case 'nutrition': return <FoodView />;
       case 'nutrition_plans': return <NutritionPlansView />;
       case 'supplements': return <SupplementsView />;

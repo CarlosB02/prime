@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Activity, TrendingUp, TrendingDown, Minus,
   Scale, FileText, ChevronDown, Eye, Edit2, Trash2, ArrowRightLeft, Download, Plus, Map
@@ -7,7 +7,6 @@ import { CustomTargetIcon } from '../icons';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import { AssessmentData } from './ClientAssessmentModal';
 import { Client } from '../../types';
-import { ClientDailyLogsTab } from './ClientDailyLogsTab';
 
 interface ClientAssessmentsTabProps {
   assessments: AssessmentData[];
@@ -20,12 +19,9 @@ interface ClientAssessmentsTabProps {
   onExport: (id?: string) => void;
 }
 
-type SubTab = 'avaliacoes' | 'diario' | 'pre_treino' | 'pos_treino';
-
 export const ClientAssessmentsTab: React.FC<ClientAssessmentsTabProps> = ({
   assessments, client, onNewAssessment, onCompare, onView, onEdit, onDelete, onExport
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<SubTab>('avaliacoes');
 
   // Chart data preparation
   const chartData = [...assessments].reverse().map(a => ({
@@ -142,43 +138,9 @@ export const ClientAssessmentsTab: React.FC<ClientAssessmentsTabProps> = ({
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="border-b border-slate-200 dark:border-slate-800">
-        <div className="flex gap-6 overflow-x-auto no-scrollbar">
-          <button 
-            onClick={() => setActiveSubTab('avaliacoes')}
-            className={`pb-4 text-sm font-bold transition-colors relative whitespace-nowrap ${activeSubTab === 'avaliacoes' ? 'text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-          >
-            Avaliações
-            {activeSubTab === 'avaliacoes' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-600 dark:bg-primary-400 rounded-t-full"></div>}
-          </button>
-          <button 
-            onClick={() => setActiveSubTab('diario')}
-            className={`pb-4 text-sm font-bold transition-colors relative whitespace-nowrap ${activeSubTab === 'diario' ? 'text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-          >
-            Registo Diário
-            {activeSubTab === 'diario' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-600 dark:bg-primary-400 rounded-t-full"></div>}
-          </button>
-          <button 
-            onClick={() => setActiveSubTab('pre_treino')}
-            className={`pb-4 text-sm font-bold transition-colors relative whitespace-nowrap ${activeSubTab === 'pre_treino' ? 'text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-          >
-            Pré-treino
-            {activeSubTab === 'pre_treino' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-600 dark:bg-primary-400 rounded-t-full"></div>}
-          </button>
-          <button 
-            onClick={() => setActiveSubTab('pos_treino')}
-            className={`pb-4 text-sm font-bold transition-colors relative whitespace-nowrap ${activeSubTab === 'pos_treino' ? 'text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-          >
-            Pós-treino
-            {activeSubTab === 'pos_treino' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary-600 dark:bg-primary-400 rounded-t-full"></div>}
-          </button>
-        </div>
-      </div>
-
-      {activeSubTab === 'avaliacoes' && (
-        <div className="space-y-6">
-          {/* Charts */}
+      {/* Charts and History */}
+      <div className="space-y-6">
+        {/* Charts */}
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 shadow-sm">
             <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-4">Evolução de Peso, Cintura & Anca</h3>
             <div className="h-80">
@@ -308,23 +270,6 @@ export const ClientAssessmentsTab: React.FC<ClientAssessmentsTabProps> = ({
             </div>
           </div>
         </div>
-      )}
-
-      {activeSubTab === 'diario' && (
-        <ClientDailyLogsTab />
-      )}
-
-      {activeSubTab !== 'avaliacoes' && activeSubTab !== 'diario' && (
-        <div className="glass-panel border border-slate-200 dark:border-slate-800 rounded-2xl p-12 flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-            <FileText size={24} className="text-slate-400" />
-          </div>
-          <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">Sem dados registados</h3>
-          <p className="text-slate-500 max-w-sm mt-2 text-sm">
-            Ainda não existem dados para este tipo de registo. A área encontra-se em preparação.
-          </p>
-        </div>
-      )}
     </div>
   );
 };

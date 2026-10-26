@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { collection, query, where, addDoc, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, addDoc, doc, updateDoc, deleteDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { db, auth } from '../../lib/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { 
@@ -47,6 +47,7 @@ import QuickActionModal, { QuickActionModalType } from './QuickActionModal';
 import ClientDetailsView from './ClientDetailsView';
 import SendMessageModal from './SendMessageModal';
 import AddClientModal from './AddClientModal';
+import ClientCard from './ClientCard';
 
 type QuickFilterType = 
   | 'all'
@@ -87,15 +88,15 @@ const ClientsView: React.FC = () => {
     }
   };
 
-  // Optional Firestore sync
+  // Firestore real-time sync with fallback
   const clientsRef = collection(db, 'clients');
-  const q = user ? query(clientsRef, where('ownerId', '==', user.uid)) : null;
+  const q = user ? query(clientsRef, where('ownerId', '==', user.uid)) : query(clientsRef);
   const [firebaseClients] = useCollectionData(q);
 
   // Merge firebase clients if available into clients list
   const clients = useMemo(() => {
     if (firebaseClients && firebaseClients.length > 0) {
-      const fbIds = new Set(firebaseClients.map(c => c.id));
+      const fbIds = new Set(firebaseClients.map((c: any) => c.id));
       const nonFb = localClients.filter(c => !fbIds.has(c.id));
       return [...(firebaseClients as Client[]), ...nonFb];
     }
@@ -245,12 +246,11 @@ const ClientsView: React.FC = () => {
       saveClients(updated);
       setClientToDelete(null);
 
-      if (user) {
-        try {
-          await deleteDoc(doc(db, 'clients', toDeleteId));
-        } catch (e) {
-          console.warn("Firestore delete note:", e);
-        }
+      try {
+        await deleteDoc(doc(db, 'clients', toDeleteId));
+        console.log("Client deleted from Firestore:", toDeleteId);
+      } catch (e) {
+        console.warn("Firestore delete note:", e);
       }
     }
   };
@@ -262,15 +262,39 @@ const ClientsView: React.FC = () => {
       saveClients(updated);
       setClientToDelete(null);
 
-      if (user) {
-        try {
-          await updateDoc(doc(db, 'clients', toSuspendId), {
-            status: 'warning'
-          });
-        } catch (e) {
-          console.warn("Firestore suspend note:", e);
-        }
+      try {
+        await updateDoc(doc(db, 'clients', toSuspendId), {
+          status: 'warning',
+          updatedAt: serverTimestamp()
+        });
+        console.log("Client suspended in Firestore:", toSuspendId);
+      } catch (e) {
+        console.warn("Firestore suspend note:", e);
       }
+    }
+  };
+
+  const handleUpdateClient = async (clientId: string, updatedFields: Partial<Client>) => {
+    // 1. Update in local state & localStorage
+    const updated = localClients.map(c => c.id === clientId ? { ...c, ...updatedFields } : c);
+    saveClients(updated);
+
+    if (selectedClient && selectedClient.id === clientId) {
+      setSelectedClient(prev => prev ? { ...prev, ...updatedFields } : null);
+    }
+
+    // 2. Persist to Firestore
+    try {
+      const cleanData = Object.fromEntries(
+        Object.entries({
+          ...updatedFields,
+          updatedAt: serverTimestamp()
+        }).filter(([_, v]) => v !== undefined)
+      );
+      await updateDoc(doc(db, 'clients', clientId), cleanData);
+      console.log("Client fields updated in Firestore:", clientId, updatedFields);
+    } catch (e) {
+      console.warn("Firestore updateClient note:", e);
     }
   };
 
@@ -294,7 +318,7 @@ const ClientsView: React.FC = () => {
       isPaying: clientData.isPaying ?? true,
       hasSubscription: clientData.hasSubscription ?? true,
       nextEvaluationDate: clientData.nextEvaluationDate || '2026-11-01',
-      ownerId: user?.uid || 'user_pt',
+      ownerId: user?.uid || 'pt_default',
       ...clientData
     };
 
@@ -302,18 +326,17 @@ const ClientsView: React.FC = () => {
     saveClients(updated);
     setIsAddModalOpen(false);
 
-    if (user) {
-      try {
-        const cleanData = Object.fromEntries(
-          Object.entries({
-            ...newClient,
-            createdAt: serverTimestamp()
-          }).filter(([_, v]) => v !== undefined)
-        );
-        await addDoc(collection(db, 'clients'), cleanData);
-      } catch (e) {
-        console.warn("Firestore add client note:", e);
-      }
+    try {
+      const cleanData = Object.fromEntries(
+        Object.entries({
+          ...newClient,
+          createdAt: serverTimestamp()
+        }).filter(([_, v]) => v !== undefined)
+      );
+      await setDoc(doc(db, 'clients', newId), cleanData);
+      console.log("Client saved to Firestore:", newId);
+    } catch (e) {
+      console.warn("Firestore add client note:", e);
     }
   };
 
@@ -351,37 +374,35 @@ const ClientsView: React.FC = () => {
       isPaying: true,
       hasSubscription: true,
       nextEvaluationDate: '2026-10-15',
-      ownerId: user?.uid || 'user_pt'
+      ownerId: user?.uid || 'pt_default'
     };
 
     const updated = [mockClient, ...localClients];
     saveClients(updated);
 
-    if (user) {
-      try {
-        await addDoc(collection(db, 'clients'), {
+    try {
+      const cleanData = Object.fromEntries(
+        Object.entries({
           ...mockClient,
           createdAt: serverTimestamp()
-        });
-      } catch (e) {
-        console.warn("Firestore fictional client note:", e);
-      }
+        }).filter(([_, v]) => v !== undefined)
+      );
+      await setDoc(doc(db, 'clients', newId), cleanData);
+    } catch (e) {
+      console.warn("Firestore fictional client note:", e);
     }
   };
 
   // Function to seed or reset database
   const seedDatabase = async () => {
     saveClients(MOCK_CLIENTS);
-    if (user) {
-      try {
-        for (const client of MOCK_CLIENTS) {
-          const clientData = { ...client, ownerId: user.uid, createdAt: serverTimestamp() };
-          delete (clientData as any).id;
-          await addDoc(collection(db, 'clients'), clientData);
-        }
-      } catch (e) {
-        console.warn("Firestore seed note:", e);
+    try {
+      for (const client of MOCK_CLIENTS) {
+        const clientData = { ...client, ownerId: user?.uid || 'pt_default', createdAt: serverTimestamp() };
+        await setDoc(doc(db, 'clients', client.id), clientData);
       }
+    } catch (e) {
+      console.warn("Firestore seed note:", e);
     }
   };
 
@@ -390,6 +411,7 @@ const ClientsView: React.FC = () => {
       <ClientDetailsView 
         client={selectedClient} 
         onBack={() => setSelectedClient(null)} 
+        onUpdateClient={(updatedFields) => handleUpdateClient(selectedClient.id, updatedFields)}
       />
     );
   }
@@ -555,180 +577,64 @@ const ClientsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Table */}
-      <div className="glass-panel border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
-        {/* Table Header */}
-        <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-slate-50/80 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-400 uppercase tracking-wider items-center">
-          <div className="col-span-1 hidden xl:block">ID</div>
-          <div 
-            className="col-span-8 sm:col-span-5 md:col-span-4 lg:col-span-3 xl:col-span-3 flex items-center gap-1 cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors select-none"
-            onClick={toggleSort}
-          >
-            Nome
-            <div className="flex flex-col">
-              <ArrowUp size={10} className={`${sortDirection === 'asc' ? 'text-primary-500' : 'opacity-30'}`} />
-              <ArrowDown size={10} className={`-mt-1 ${sortDirection === 'desc' ? 'text-primary-500' : 'opacity-30'}`} />
-            </div>
-          </div>
-          <div className="col-span-3 hidden sm:block md:col-span-2 lg:col-span-2 xl:col-span-1">Estado</div>
-          <div className="col-span-1 hidden lg:flex justify-center" title="Pagante"><CheckCircle2 size={16} /></div>
-          <div className="col-span-1 hidden lg:flex justify-center" title="Subscrição"><RotateCcw size={16} /></div>
-          <div className="col-span-1 hidden xl:block text-center">Avaliação</div>
-          <div className="col-span-1 hidden xl:block text-center">Pagamento</div>
-          <div className="col-span-3 hidden md:block lg:col-span-2 xl:col-span-1 text-center">Plano</div>
-          <div className="col-span-1 hidden lg:flex justify-center" title="Contacto"><Phone size={16} /></div>
-          <div className="col-span-4 sm:col-span-4 md:col-span-3 lg:col-span-2 xl:col-span-1 text-right">Ações</div>
-        </div>
-
-        {/* List Items */}
-        <div className="divide-y divide-slate-100 dark:divide-slate-800 bg-white/50 dark:bg-slate-900/30">
-          {filteredClients.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-                 <Users size={32} className="text-slate-400" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">Sem clientes encontrados</h3>
-              <p className="text-slate-500 max-w-xs mt-2 text-sm">Não existem clientes que correspondam à sua pesquisa.</p>
-            </div>
-          ) : (
-            filteredClients.map((client) => (
-              <div 
-                key={client.id} 
-                onClick={() => setSelectedClient(client)}
-                className="group grid grid-cols-12 gap-4 px-6 py-4 items-center transition-all duration-200 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
-              >
-                {/* ID */}
-                <div className="col-span-1 hidden xl:block">
-                  <span className="text-xs font-mono text-slate-400 dark:text-slate-500">#{client.id.padStart(4, '0')}</span>
-                </div>
-
-                {/* Client Info */}
-                <div className="col-span-8 sm:col-span-5 md:col-span-4 lg:col-span-3 xl:col-span-3 flex items-center gap-3">
-                  <img src={client.avatar} alt={client.name} className="w-10 h-10 rounded-full object-cover border-2 border-white dark:border-slate-800 shadow-sm" />
-                  <div className="min-w-0">
-                    <h3 className="font-bold text-slate-800 dark:text-white text-sm truncate">{client.name}</h3>
-                  </div>
-                </div>
-
-                {/* Status */}
-                <div className="col-span-3 hidden sm:block md:col-span-2 lg:col-span-2 xl:col-span-1">
-                  <div className="flex items-center gap-1.5">
-                    <div className={`w-2 h-2 rounded-full ${client.status === 'active' ? 'bg-emerald-500' : client.status === 'warning' ? 'bg-amber-500' : 'bg-slate-400'}`} />
-                    <span className={`px-2 py-0.5 rounded-md text-[11px] font-semibold uppercase tracking-wide border ${getStatusColor(client.status)}`}>
-                      {getStatusLabel(client.status)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Pagante */}
-                <div className="col-span-1 hidden lg:flex justify-center">
-                  {client.isPaying ? (
-                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" title="Pagante">
-                      <CheckCircle2 size={14} />
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500" title="Não Pagante">
-                      <XCircle size={14} />
-                    </div>
-                  )}
-                </div>
-
-                {/* Subscrição */}
-                <div className="col-span-1 hidden lg:flex justify-center">
-                  {client.hasSubscription ? (
-                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" title="Com Subscrição">
-                      <RotateCcw size={14} />
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500" title="Sem Subscrição">
-                      <XCircle size={14} />
-                    </div>
-                  )}
-                </div>
-
-                {/* Próxima Avaliação */}
-                <div className="col-span-1 hidden xl:flex justify-center">
-                  {client.nextEvaluationDate ? (
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">
-                      <span>{formatDateWithoutYear(client.nextEvaluationDate)}</span>
-                    </div>
-                  ) : (
-                    <span className="text-slate-300 dark:text-slate-600">-</span>
-                  )}
-                </div>
-
-                {/* Próximo Pagamento */}
-                <div className="col-span-1 hidden xl:flex justify-center">
-                  {client.paymentExpiryDate ? (
-                    <div className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg ${
-                      isExpired(client.paymentExpiryDate) 
-                        ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 font-medium' 
-                        : isExpiringSoon(client.paymentExpiryDate)
-                          ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400 font-medium'
-                          : 'text-slate-600 dark:text-slate-300 font-medium'
-                    }`}>
-                      <span>{formatDateWithoutYear(client.paymentExpiryDate)}</span>
-                    </div>
-                  ) : (
-                    <span className="text-slate-300 dark:text-slate-600">-</span>
-                  )}
-                </div>
-
-                {/* Plan */}
-                <div className="col-span-3 hidden md:flex lg:col-span-2 xl:col-span-1 justify-center">
-                  <div className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold tracking-wide" title={client.plan}>
-                    {client.plan.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase()}
-                  </div>
-                </div>
-
-                {/* Contacto */}
-                <div className="col-span-1 hidden lg:flex justify-center">
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setContactModalClient(client);
-                    }}
-                    className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors" 
-                    title="Ver Contacto"
-                  >
-                    <Phone size={16} />
-                  </button>
-                </div>
-
-                {/* Actions */}
-                <div className="col-span-4 sm:col-span-4 md:col-span-3 lg:col-span-2 xl:col-span-1 flex justify-end items-center gap-1">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setMessageModalClient(client);
-                      }}
-                      className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors" title="Enviar Mensagem">
-                      <CustomChatIcon size={16} />
-                    </button>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedClient(client);
-                      }}
-                      className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors" title="Ver Detalhes / Editar">
-                      <Edit2 size={16} />
-                    </button>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteClient(client);
-                      }}
-                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" 
-                      title="Eliminar"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                </div>
-              </div>
-            ))
+      {/* Clients List Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            Apresentando
+          </span>
+          <span className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black">
+            {filteredClients.length}
+          </span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">
+            de {clients.length} clientes registados
+          </span>
+          {tableFilter !== 'todos' && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-primary-50 dark:bg-primary-950/40 text-primary-600 dark:text-primary-400">
+              Filtro ativo: {tableFilter}
+            </span>
           )}
         </div>
+
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={toggleSort}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors shadow-sm select-none"
+            title="Ordenar por Nome"
+          >
+            <span>Ordenar por Nome</span>
+            <div className="flex flex-col">
+              <ArrowUp size={10} className={`${sortDirection === 'asc' ? 'text-primary-500 font-bold' : 'opacity-30'}`} />
+              <ArrowDown size={10} className={`-mt-1 ${sortDirection === 'desc' ? 'text-primary-500 font-bold' : 'opacity-30'}`} />
+            </div>
+          </button>
+        </div>
       </div>
+
+      {/* Main Client Horizontal Blocks */}
+      {filteredClients.length === 0 ? (
+        <div className="glass-panel border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+             <Users size={32} className="text-slate-400" />
+          </div>
+          <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">Sem clientes encontrados</h3>
+          <p className="text-slate-500 max-w-xs mt-2 text-sm">Não existem clientes que correspondam à sua pesquisa.</p>
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {filteredClients.map((client) => (
+            <ClientCard
+              key={client.id}
+              client={client}
+              todayStr={todayStr}
+              onSelect={() => setSelectedClient(client)}
+              onMessage={() => setMessageModalClient(client)}
+              onContact={() => setContactModalClient(client)}
+              onDelete={() => handleDeleteClient(client)}
+            />
+          ))}
+        </div>
+      )}
 
       <SendNotificationModal 
         isOpen={isNotificationModalOpen}
@@ -802,38 +708,75 @@ const ClientsView: React.FC = () => {
       {/* Contact Modal */}
       {contactModalClient && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-scale-in">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl w-full max-w-sm overflow-hidden animate-scale-in border border-slate-200 dark:border-slate-700">
             <div className="p-6 text-center">
-              <div className="w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mx-auto mb-4">
-                <Phone size={28} className="text-primary-600 dark:text-primary-400" />
+              <div className="relative w-16 h-16 rounded-full mx-auto mb-3 overflow-hidden shadow-md border-2 border-primary-500">
+                {contactModalClient.avatar ? (
+                  <img src={contactModalClient.avatar} alt={contactModalClient.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center text-white font-bold">
+                    {contactModalClient.name.substring(0, 2).toUpperCase()}
+                  </div>
+                )}
               </div>
-              <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-1">
-                Contacto
-              </h3>
-              <p className="text-slate-500 dark:text-slate-400 mb-6">
+              <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-0.5">
                 {contactModalClient.name}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">
+                {contactModalClient.plan}
               </p>
               
-              <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 mb-6">
-                <a 
-                  href={`tel:${contactModalClient.contact}`}
-                  className="text-2xl font-bold text-primary-600 dark:text-primary-400 hover:underline tracking-wide"
-                >
-                  {contactModalClient.contact}
-                </a>
+              <div className="space-y-3 mb-6 text-left">
+                {/* Phone */}
+                <div className="bg-slate-50 dark:bg-slate-900/60 rounded-2xl p-3 border border-slate-200/80 dark:border-slate-700/80">
+                  <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                    Telemóvel / WhatsApp
+                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-base font-bold text-slate-800 dark:text-slate-100">
+                      {contactModalClient.phone || contactModalClient.contact || '+351 912 345 678'}
+                    </span>
+                    <a
+                      href={`tel:${contactModalClient.phone || contactModalClient.contact}`}
+                      className="p-2 rounded-xl bg-primary-50 text-primary-600 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-400 transition-colors"
+                      title="Ligar"
+                    >
+                      <Phone size={16} />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div className="bg-slate-50 dark:bg-slate-900/60 rounded-2xl p-3 border border-slate-200/80 dark:border-slate-700/80">
+                  <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                    Email
+                  </span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">
+                      {contactModalClient.email || `${contactModalClient.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '.')}@evolvepro.pt`}
+                    </span>
+                    <a
+                      href={`mailto:${contactModalClient.email || `${contactModalClient.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '.')}@evolvepro.pt`}`}
+                      className="p-2 rounded-xl bg-primary-50 text-primary-600 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-400 transition-colors shrink-0"
+                      title="Enviar email"
+                    >
+                      <Mail size={16} />
+                    </a>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 <a 
-                  href={`tel:${contactModalClient.contact}`}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium transition-colors"
+                  href={`tel:${contactModalClient.phone || contactModalClient.contact}`}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold text-sm transition-colors shadow-lg shadow-primary-500/20"
                 >
-                  <Phone size={18} />
-                  Ligar
+                  <Phone size={16} />
+                  Ligar Agora
                 </a>
                 <button 
                   onClick={() => setContactModalClient(null)}
-                  className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 rounded-xl font-medium transition-colors"
+                  className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm transition-colors"
                 >
                   Fechar
                 </button>

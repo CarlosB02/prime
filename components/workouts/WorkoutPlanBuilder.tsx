@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ArrowLeft, Search, Plus, Save, Bell, Trash2, 
   Settings, ChevronRight, Copy, Download, Upload,
@@ -14,6 +14,8 @@ import { ExerciseSelect } from './ExerciseSelect';
 import { CardioAndStretchingConfig } from './CardioAndStretching';
 import { SetTypesDropdown } from './SetTypesDropdown';
 import { RepsPerSetDropdown } from './RepsPerSetDropdown';
+import { CargaPerSetDropdown, RirPerSetDropdown, RestPerSetDropdown } from './PerSetSlotDropdown';
+import { getRegisteredTechniques, ExerciseTechnique } from '../../lib/techniques';
 
 interface WorkoutPlanBuilderProps {
   planData?: any;
@@ -35,6 +37,10 @@ export interface ExerciseRow {
   carga?: string;
   setTypes?: Record<number, string>;
   repsPerSet?: Record<number, string>;
+  cargaPerSet?: Record<number, string>;
+  rirPerSet?: Record<number, string>;
+  restPerSet?: Record<number, string>;
+  repsUnit?: string;
   isSuperSet?: boolean;
 }
 
@@ -61,6 +67,53 @@ interface Week {
   days: WeekDay[];
   workouts: Workout[];
 }
+
+const formatDate = (dateStr: string): string => {
+  if (!dateStr) return "--/--/----";
+  const parts = dateStr.split("-");
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return dateStr;
+};
+
+const calculateEndDate = (startDateStr: string, days = 7): string => {
+  if (!startDateStr) return '';
+  const parts = startDateStr.split('-');
+  if (parts.length !== 3) return '';
+  const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+  if (isNaN(d.getTime())) return '';
+  d.setDate(d.getDate() + days);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const calculatePlanDuration = (startDateStr: string, endDateStr: string): string => {
+  if (!startDateStr || !endDateStr) return '';
+  const startParts = startDateStr.split('-').map(Number);
+  const endParts = endDateStr.split('-').map(Number);
+  if (startParts.length !== 3 || endParts.length !== 3) return '';
+
+  const dStart = new Date(startParts[0], startParts[1] - 1, startParts[2]);
+  const dEnd = new Date(endParts[0], endParts[1] - 1, endParts[2]);
+  const diffTime = dEnd.getTime() - dStart.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays <= 0) return '';
+
+  const weeks = Math.floor(diffDays / 7);
+  const remDays = diffDays % 7;
+
+  if (weeks > 0 && remDays === 0) {
+    return `${weeks} ${weeks === 1 ? 'semana' : 'semanas'} / ${diffDays} dias`;
+  }
+  if (weeks > 0 && remDays > 0) {
+    return `${weeks} ${weeks === 1 ? 'semana' : 'semanas'} e ${remDays} ${remDays === 1 ? 'dia' : 'dias'} / ${diffDays} dias`;
+  }
+  return `${diffDays} ${diffDays === 1 ? 'dia' : 'dias'}`;
+};
 
 const MAIN_MUSCLE_GROUPS = [
   'Glúteos', 'Quadríceps', 'Isquiotibiais', 'Gémeos', 'Abdómen', 
@@ -90,6 +143,7 @@ const INITIAL_EXERCISE: ExerciseRow = {
   sets: '3',
   reps: '10-12',
   rir: '1-2',
+  rirPerSet: { 1: '1-2', 2: '1-2', 3: '1-2' },
   rest: '90s',
   instructions: 'Foco na contração de pico. Pausa de 1s em cima.',
   target: '',
@@ -126,12 +180,22 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
   const [isActive, setIsActive] = useState(true);
   const [activeMainTab, setActiveMainTab] = useState<'treino' | 'cardio' | 'alongamentos'>('treino');
   const [planName, setPlanName] = useState(planData?.name || 'Novo Plano de Treino');
-  const [startDate, setStartDate] = useState(planData?.startDate || new Date().toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState(planData?.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
+  
+  const initialStartDate = planData?.startDate || new Date().toISOString().split('T')[0];
+  const [startDate, setStartDate] = useState(initialStartDate);
+  const [endDate, setEndDate] = useState(planData?.endDate || calculateEndDate(initialStartDate, 7));
   const [hasDate, setHasDate] = useState(false);
   const [hasPeriodization, setHasPeriodization] = useState(false);
   
-  const [weeks, setWeeks] = useState<Week[]>([INITIAL_WEEK, { ...INITIAL_WEEK, id: 'week2', name: 'Semana 2', startDate: '2026-06-29', endDate: '2026-07-05' }]);
+  const [weeks, setWeeks] = useState<Week[]>(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const w1End = calculateEndDate(today, 7);
+    const w2End = calculateEndDate(w1End, 7);
+    return [
+      { ...INITIAL_WEEK, startDate: today, endDate: w1End },
+      { ...INITIAL_WEEK, id: 'week2', name: 'Semana 2', startDate: w1End, endDate: w2End }
+    ];
+  });
   const [activeWeekId, setActiveWeekId] = useState<string>(INITIAL_WEEK.id);
   const [activeWorkoutId, setActiveWorkoutId] = useState<string>(INITIAL_WORKOUT.id);
   const [isMassEditModalOpen, setIsMassEditModalOpen] = useState(false);
@@ -145,17 +209,71 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
     showRest: true,
   });
 
-  const handleSaveSetTypes = (exerciseId: string, setTypes: Record<number, string>) => {
+  const [registeredTechniques, setRegisteredTechniques] = useState<ExerciseTechnique[]>(() => getRegisteredTechniques());
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setRegisteredTechniques(getRegisteredTechniques());
+    };
+    window.addEventListener('pr1me_techniques_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('pr1me_techniques_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, []);
+
+  // Sincronizar data de término principal com o fim da última semana adicionada
+  useEffect(() => {
+    if (weeks.length > 0) {
+      const lastWeekEndDate = weeks[weeks.length - 1].endDate;
+      if (lastWeekEndDate && lastWeekEndDate !== endDate) {
+        setEndDate(lastWeekEndDate);
+      }
+    }
+  }, [weeks]);
+
+const handleSaveSetTypes = (exerciseId: string, setTypes: Record<number, string>) => {
     updateActiveWorkout(w => ({
       ...w,
       exercises: w.exercises.map(e => e.id === exerciseId ? { ...e, setTypes } : e)
     }));
   };
 
-  const handleSaveRepsPerSet = (exerciseId: string, repsPerSet: Record<number, string>) => {
+  const handleSaveRepsPerSet = (exerciseId: string, repsPerSet: Record<number, string>, repsUnit?: string) => {
     updateActiveWorkout(w => ({
       ...w,
-      exercises: w.exercises.map(e => e.id === exerciseId ? { ...e, repsPerSet } : e)
+      exercises: w.exercises.map(e => {
+        if (e.id === exerciseId) {
+          return {
+            ...e,
+            repsPerSet,
+            ...(repsUnit ? { repsUnit } : {})
+          };
+        }
+        return e;
+      })
+    }));
+  };
+
+  const handleSaveCargaPerSet = (exerciseId: string, cargaPerSet: Record<number, string>) => {
+    updateActiveWorkout(w => ({
+      ...w,
+      exercises: w.exercises.map(e => e.id === exerciseId ? { ...e, cargaPerSet } : e)
+    }));
+  };
+
+  const handleSaveRirPerSet = (exerciseId: string, rirPerSet: Record<number, string>) => {
+    updateActiveWorkout(w => ({
+      ...w,
+      exercises: w.exercises.map(e => e.id === exerciseId ? { ...e, rirPerSet } : e)
+    }));
+  };
+
+  const handleSaveRestPerSet = (exerciseId: string, restPerSet: Record<number, string>) => {
+    updateActiveWorkout(w => ({
+      ...w,
+      exercises: w.exercises.map(e => e.id === exerciseId ? { ...e, restPerSet } : e)
     }));
   };
 
@@ -338,7 +456,42 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
   const updateExercise = (exerciseId: string, field: keyof ExerciseRow, value: any) => {
     updateActiveWorkout(w => ({
       ...w,
-      exercises: w.exercises.map(e => e.id === exerciseId ? { ...e, [field]: value } : e)
+      exercises: w.exercises.map(e => {
+        if (e.id !== exerciseId) return e;
+
+        if (field === 'rir') {
+          const numSets = parseInt(e.sets, 10) || 0;
+          const newRirPerSet: Record<number, string> = {};
+          if (value !== undefined && String(value).trim() !== '') {
+            const count = Math.max(numSets, 12);
+            for (let i = 1; i <= count; i++) {
+              newRirPerSet[i] = String(value);
+            }
+          }
+          return {
+            ...e,
+            rir: value,
+            rirPerSet: newRirPerSet
+          };
+        }
+
+        if (field === 'sets') {
+          const numSets = parseInt(value, 10) || 0;
+          if (e.rir && numSets > 0) {
+            const newRirPerSet: Record<number, string> = {};
+            for (let i = 1; i <= numSets; i++) {
+              newRirPerSet[i] = e.rirPerSet?.[i] || e.rir;
+            }
+            return {
+              ...e,
+              sets: value,
+              rirPerSet: newRirPerSet
+            };
+          }
+        }
+
+        return { ...e, [field]: value };
+      })
     }));
   };
 
@@ -349,14 +502,70 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
     }));
   };
 
+  // Helper to calculate volume contribution for an exercise in the context of its workout
+  const getExerciseVolume = (
+    exercise: ExerciseRow,
+    allExercisesInWorkout: ExerciseRow[],
+    index: number
+  ): number => {
+    if (!exercise.sets) return 0;
+    const numSets = parseInt(exercise.sets, 10) || 0;
+    if (numSets <= 0) return 0;
+
+    // Create lookup map for registered techniques (lowercase)
+    const techMap = new Map<string, number>();
+    registeredTechniques.forEach(t => {
+      if (t.name) techMap.set(t.name.trim().toLowerCase(), Number(t.defaultVolume) || 1);
+      if (t.acronym) techMap.set(t.acronym.trim().toLowerCase(), Number(t.defaultVolume) || 1);
+    });
+
+    // Check if this exercise is part of a superset / bi-set pair:
+    // It is a bi-set if:
+    // 1) exercise.isSuperSet is true
+    // 2) or the next exercise in the list has isSuperSet === true (meaning this is the first exercise of the bi-set pair)
+    const isPairedBiSet = exercise.isSuperSet || (index >= 0 && index < allExercisesInWorkout.length - 1 && allExercisesInWorkout[index + 1]?.isSuperSet);
+
+    // Look up default volume for Bi-Set from registered techniques (defaults to 2)
+    const biSetDefaultVolume = techMap.get('bi-set') ?? techMap.get('biset') ?? techMap.get('bs') ?? 2;
+
+    let totalVolume = 0;
+    const setTypes = exercise.setTypes || {};
+
+    for (let setIdx = 1; setIdx <= numSets; setIdx++) {
+      const typeStr = setTypes[setIdx]?.trim().toLowerCase();
+      if (typeStr) {
+        if (techMap.has(typeStr)) {
+          totalVolume += techMap.get(typeStr)!;
+        } else if (
+          typeStr.includes('bi-set') || 
+          typeStr.includes('biset') || 
+          typeStr.includes('bi set') || 
+          typeStr.includes('super-set') || 
+          typeStr.includes('superset')
+        ) {
+          totalVolume += biSetDefaultVolume;
+        } else {
+          totalVolume += 1;
+        }
+      } else if (isPairedBiSet) {
+        // No explicit set technique chosen, but exercise is marked/linked as Bi-Set / Super-Set
+        totalVolume += biSetDefaultVolume;
+      } else {
+        totalVolume += 1;
+      }
+    }
+
+    return totalVolume;
+  };
+
   // Calculate estimated volume (sets per muscle group) for the active workout
   const getWorkoutVolume = () => {
     const volume: Record<string, number> = {};
     if (!activeWorkout) return volume;
-    activeWorkout.exercises.forEach(e => {
+    activeWorkout.exercises.forEach((e, idx) => {
       if (e.muscleGroup && e.sets) {
-        const setsNum = parseInt(e.sets) || 0;
-        volume[e.muscleGroup] = (volume[e.muscleGroup] || 0) + setsNum;
+        const exerciseVol = getExerciseVolume(e, activeWorkout.exercises, idx);
+        volume[e.muscleGroup] = (volume[e.muscleGroup] || 0) + exerciseVol;
       }
     });
     return volume;
@@ -366,10 +575,10 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
     const volume: Record<string, number> = {};
     if (!activeWeek) return volume;
     activeWeek.workouts.forEach(w => {
-      w.exercises.forEach(e => {
+      w.exercises.forEach((e, idx) => {
         if (e.muscleGroup && e.sets) {
-          const setsNum = parseInt(e.sets) || 0;
-          volume[e.muscleGroup] = (volume[e.muscleGroup] || 0) + setsNum;
+          const exerciseVol = getExerciseVolume(e, w.exercises, idx);
+          volume[e.muscleGroup] = (volume[e.muscleGroup] || 0) + exerciseVol;
         }
       });
     });
@@ -435,22 +644,42 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
     setWeeks(weeks.map(w => w.id === weekId ? { ...w, [field]: value } : w));
   };
 
+  const handleWeekStartDateChange = (weekId: string, newStartDate: string) => {
+    const weekIdx = weeks.findIndex(w => w.id === weekId);
+    if (weekIdx === -1) return;
+    const newWeeks = [...weeks];
+    let currStart = newStartDate;
+    for (let i = weekIdx; i < newWeeks.length; i++) {
+      const currEnd = calculateEndDate(currStart, 7);
+      newWeeks[i] = {
+        ...newWeeks[i],
+        startDate: currStart,
+        endDate: currEnd
+      };
+      currStart = currEnd;
+    }
+    if (weekIdx === 0) {
+      setStartDate(newStartDate);
+      setEndDate(calculateEndDate(newStartDate, 7));
+    }
+    setWeeks(newWeeks);
+  };
+
   const recalculateWeekDates = (baseStartDate: string, currentWeeks: Week[]) => {
     if (!baseStartDate) return currentWeeks;
     
-    let currentDate = new Date(baseStartDate);
-    return currentWeeks.map((week, index) => {
-      const weekStart = new Date(currentDate);
-      const weekEnd = new Date(currentDate);
-      weekEnd.setDate(weekEnd.getDate() + 6);
+    let currentDateStr = baseStartDate;
+    return currentWeeks.map((week) => {
+      const weekStart = currentDateStr;
+      const weekEnd = calculateEndDate(weekStart, 7);
       
       const newWeek = {
         ...week,
-        startDate: weekStart.toISOString().split('T')[0],
-        endDate: weekEnd.toISOString().split('T')[0]
+        startDate: weekStart,
+        endDate: weekEnd
       };
       
-      currentDate.setDate(currentDate.getDate() + 7);
+      currentDateStr = weekEnd;
       return newWeek;
     });
   };
@@ -460,25 +689,41 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
     setHasPeriodization(nextState);
     if (nextState) {
       setHasDate(true);
-      setWeeks(recalculateWeekDates(startDate, weeks));
+      const recalculated = recalculateWeekDates(startDate, weeks);
+      setWeeks(recalculated);
+      if (recalculated.length > 0) {
+        setEndDate(recalculated[recalculated.length - 1].endDate);
+      }
+    } else {
+      setEndDate(calculateEndDate(startDate, 7));
     }
   };
 
   const handleStartDateChange = (newDate: string) => {
-    setStartDate(newDate);
+    setStartDate(newDate || '');
     if (hasPeriodization) {
-      setWeeks(recalculateWeekDates(newDate, weeks));
+      const recalculated = recalculateWeekDates(newDate, weeks);
+      setWeeks(recalculated);
+      if (recalculated.length > 0) {
+        setEndDate(recalculated[recalculated.length - 1].endDate);
+      }
+    } else {
+      setEndDate(calculateEndDate(newDate, 7));
     }
   };
 
   const handleAddWeek = () => {
+    const lastWeek = weeks[weeks.length - 1];
+    const nextStart = lastWeek?.endDate || startDate || new Date().toISOString().split('T')[0];
+    const nextEnd = calculateEndDate(nextStart, 7);
+
     const newWeek: Week = {
       ...INITIAL_WEEK,
       id: Math.random().toString(),
       name:`Semana ${weeks.length + 1}`,
-      startDate: '',
-      endDate: '',
-      workouts: [{ id: Math.random().toString(), name: 'Treino A', exercises: [] }] // Initialize with one workout for convenience if needed, though INITIAL_WEEK might have one.
+      startDate: nextStart,
+      endDate: nextEnd,
+      workouts: [{ id: Math.random().toString(), name: 'Treino A', exercises: [] }]
     };
     let newWeeksList = [...weeks, newWeek];
     if (hasPeriodization && hasDate && startDate) {
@@ -492,6 +737,10 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
     const activeWeek = weeks.find(w => w.id === activeWeekId);
     if (!activeWeek) return;
     
+    const lastWeek = weeks[weeks.length - 1];
+    const nextStart = lastWeek?.endDate || activeWeek.endDate || startDate || new Date().toISOString().split('T')[0];
+    const nextEnd = calculateEndDate(nextStart, 7);
+
     // Deep copy workouts with new IDs
     const newWorkouts = activeWeek.workouts.map(w => ({
       ...w,
@@ -514,8 +763,8 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
       ...activeWeek,
       id: Math.random().toString(),
       name: `Semana ${weeks.length + 1}`,
-      startDate: '',
-      endDate: '',
+      startDate: nextStart,
+      endDate: nextEnd,
       workouts: newWorkouts,
       days: newDays
     };
@@ -662,7 +911,7 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
            <div className="flex-1 max-w-3xl">
              <input 
                type="text" 
-               value={planName}
+               value={planName || ''}
                onChange={e => setPlanName(e.target.value)}
                className="text-2xl font-black text-slate-800 dark:text-white bg-transparent border-none p-0 focus:ring-0 w-full mb-2 placeholder-slate-300 dark:placeholder-slate-700"
                placeholder="Nome do Plano de Treino..."
@@ -683,13 +932,44 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
              </div>
              
              {hasDate && (
-               <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 w-fit mt-3">
-                  <CustomCalendarIcon size={14}/>
-                  <input type="date" value={startDate} onChange={e => handleStartDateChange(e.target.value)} className="bg-transparent border-none p-0 text-sm focus:ring-0 text-slate-600 dark:text-slate-300 w-28 font-medium"/>
-                  <span className="text-slate-400 text-xs">até</span>
-                  <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="bg-transparent border-none p-0 text-sm focus:ring-0 text-slate-600 dark:text-slate-300 w-28 font-medium"/>
-               </div>
-             )}
+                <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 w-fit mt-2.5 text-xs">
+                  <div className="relative inline-flex items-center cursor-pointer group">
+                    <span className="font-semibold text-sm text-slate-700 dark:text-slate-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                      {formatDate(startDate)}
+                    </span>
+                    <input 
+                      type="date" 
+                      value={startDate || ''} 
+                      onChange={e => handleStartDateChange(e.target.value)} 
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                      title="Clique para alterar a data de início"
+                    />
+                  </div>
+
+                  <span className="text-slate-400 font-medium text-xs">até</span>
+
+                  <span 
+                    className="font-semibold text-sm text-slate-500 dark:text-slate-400 select-none"
+                    title="Data de término da última semana adicionada"
+                  >
+                    {formatDate(weeks.length > 0 ? weeks[weeks.length - 1].endDate : endDate)}
+                  </span>
+
+                  {(() => {
+                    const currentEnd = weeks.length > 0 ? weeks[weeks.length - 1].endDate : endDate;
+                    const durationStr = calculatePlanDuration(startDate, currentEnd);
+                    if (!durationStr) return null;
+                    return (
+                      <span 
+                        className="ml-1 text-[11px] font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/50 px-2 py-0.5 rounded-md border border-primary-100 dark:border-primary-900/40 select-none whitespace-nowrap"
+                        title="Duração total do plano de treino"
+                      >
+                        ({durationStr})
+                      </span>
+                    );
+                  })()}
+                </div>
+              )}
            </div>
         </div>
       </div>
@@ -727,12 +1007,12 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
           {hasPeriodization && (
           <div className="space-y-3">
              <div className="flex items-center justify-between">
-               <h3 className="font-bold text-sm text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                 <Layers size={16}/> Periodização
+               <h3 className="font-bold text-sm text-slate-800 dark:text-white uppercase tracking-wider">
+                 Periodização
                </h3>
              </div>
              
-             <div className="flex gap-4 overflow-x-auto custom-scrollbar pb-2 pt-1 items-stretch">
+             <div className="flex gap-2.5 overflow-x-auto custom-scrollbar pb-2 pt-1 items-center">
                {weeks.map((week, index) => (
                  <div 
                    key={week.id}
@@ -742,51 +1022,72 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
                    onDragEnd={handleWeekDragEnd}
                    onDragOver={(e) => e.preventDefault()}
                    onClick={() => handleWeekSelect(week.id)}
-                   className={`flex-shrink-0 min-w-[240px] p-4 rounded-2xl border cursor-pointer transition-all group relative
+                   className={`flex-shrink-0 flex items-center gap-2 px-2.5 py-1.5 rounded-xl border cursor-pointer transition-all group relative
                      ${activeWeekId === week.id 
-                       ? 'bg-white dark:bg-slate-900 border-primary-500 shadow-md ring-2 ring-primary-500/20' 
-                       : 'bg-white/60 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-white dark:hover:bg-slate-900'}
-                     ${draggedWeekIndex === index ? 'opacity-50 border-dashed' : ''}`}
+                       ? "bg-white dark:bg-slate-900 border-primary-500 shadow-sm ring-2 ring-primary-500/20" 
+                       : "bg-white/70 dark:bg-slate-900/70 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-900"}
+                     ${draggedWeekIndex === index ? "opacity-50 border-dashed" : ""}`}
                  >
-                   <div className="flex items-center justify-between mb-3">
-                     <div className="flex items-center gap-2">
-                       <GripVertical size={16} className="text-slate-300 cursor-grab active:cursor-grabbing"/>
-                       <div className="flex items-baseline gap-1">
-                         <input 
-                           type="text" 
-                           value={week.name} 
-                           onChange={(e) => updateWeek(week.id, 'name', e.target.value)} 
-                           className={`font-bold text-base bg-transparent border-none p-0 focus:ring-0 w-24 ${activeWeekId === week.id ? 'text-primary-700 dark:text-primary-400' : 'text-slate-700 dark:text-slate-300'}`}
-                         />
-                         {week.name.startsWith('Semana') && (
-                           <span className="text-xs font-bold text-slate-400">de {weeks.length}</span>
-                         )}
-                       </div>
-                     </div>
-                     <button 
-                        onClick={(e) => { e.stopPropagation(); handleDeleteWeek(week.id); }}
-                        className="text-slate-400 hover:text-rose-500 transition-opacity bg-slate-50 dark:bg-slate-800 p-1.5 rounded-lg"
-                     >
-                        <Trash2 size={14}/>
-                     </button>
+                   <GripVertical size={14} className="text-slate-300 dark:text-slate-600 cursor-grab active:cursor-grabbing shrink-0"/>
+                   
+                   {/* Título: "Semana 1 de 2" compacto, sem bloco de texto enorme */}
+                   <div className="flex items-center shrink-0">
+                     <input 
+                       type="text" 
+                       value={week.name || ''} 
+                       onChange={(e) => updateWeek(week.id, "name", e.target.value)} 
+                       style={{ width: `${Math.max(58, (week.name?.length || 8) * 7.5)}px` }}
+                       className={`font-bold text-xs sm:text-sm bg-transparent border-none p-0 focus:ring-0 outline-none ${activeWeekId === week.id ? "text-primary-700 dark:text-primary-400" : "text-slate-700 dark:text-slate-300"}`}
+                     />
+                     {week.name.startsWith("Semana") && (
+                       <span className="text-xs font-semibold text-slate-400 ml-0.5 whitespace-nowrap select-none">
+                         de {weeks.length}
+                       </span>
+                     )}
                    </div>
                    
-                   <div className="flex items-center gap-2 text-xs text-slate-500 font-medium bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-                     <CustomCalendarIcon size={14}/>
-                     <input type="date" value={week.startDate} onChange={(e) => updateWeek(week.id, 'startDate', e.target.value)} className="bg-transparent border-none p-0 w-[100px] h-5 focus:ring-0 text-xs"/>
-                     <span>até</span>
-                     <input type="date" value={week.endDate} onChange={(e) => updateWeek(week.id, 'endDate', e.target.value)} className="bg-transparent border-none p-0 w-[100px] h-5 focus:ring-0 text-xs"/>
+                   {/* Datas à frente do título na mesma linha para reduzir altura: (icon, data, até, data) sem espaços vazios */}
+                   <div className="flex items-center gap-1.5 text-xs bg-slate-50 dark:bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-800 shrink-0">
+                     <div className="relative inline-flex items-center cursor-pointer group">
+                       <span className="font-semibold text-slate-700 dark:text-slate-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                         {formatDate(week.startDate)}
+                       </span>
+                       <input 
+                         type="date" 
+                         value={week.startDate || ''} 
+                         onChange={(e) => handleWeekStartDateChange(week.id, e.target.value)} 
+                         className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                         title="Clique para alterar a data de início"
+                       />
+                     </div>
+
+                     <span className="text-slate-400 text-[11px] font-medium shrink-0">até</span>
+
+                     <span 
+                       className="font-semibold text-slate-500 dark:text-slate-400 select-none"
+                       title="Data de término calculada automaticamente (+7 dias)"
+                     >
+                       {formatDate(week.endDate)}
+                     </span>
                    </div>
+
+                   <button 
+                     onClick={(e) => { e.stopPropagation(); handleDeleteWeek(week.id); }}
+                     className="text-slate-400 hover:text-rose-500 transition-colors bg-slate-50 dark:bg-slate-800 p-1 rounded-md shrink-0"
+                     title="Eliminar semana"
+                   >
+                     <Trash2 size={13}/>
+                   </button>
                  </div>
                ))}
                
-               <div className="flex flex-col gap-2 flex-shrink-0 min-w-[200px]">
-                 <button onClick={handleAddWeek} className="flex-1 flex items-center justify-center gap-2 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-primary-500 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/10 rounded-2xl p-3 text-slate-500 font-bold transition-all">
-                    <Plus size={20} />
+               <div className="flex items-center gap-2 flex-shrink-0">
+                 <button onClick={handleAddWeek} className="flex items-center justify-center gap-1.5 border border-dashed border-slate-300 dark:border-slate-700 hover:border-primary-500 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/10 rounded-xl px-3 py-1.5 text-slate-500 text-xs font-bold transition-all h-[36px] shrink-0" title="Adicionar Semana">
+                    <Plus size={14} />
                     <span>Adicionar Semana</span>
                  </button>
-                 <button onClick={handleDuplicateWeek} className="flex-1 flex items-center justify-center gap-2 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/10 rounded-2xl p-3 text-slate-500 font-bold transition-all">
-                    <Copy size={20} />
+                 <button onClick={handleDuplicateWeek} className="flex items-center justify-center gap-1.5 border border-dashed border-slate-300 dark:border-slate-700 hover:border-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/10 rounded-xl px-3 py-1.5 text-slate-500 text-xs font-bold transition-all h-[36px] shrink-0" title="Duplicar Semana Atual">
+                    <Copy size={14} />
                     <span>Duplicar Atual</span>
                  </button>
                </div>
@@ -799,8 +1100,8 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
               
               {/* 2. DISTRIBUIÇÃO DE TREINOS & NAVEGAÇÃO */}
               <div className="space-y-4">
-                <h3 className="font-bold text-sm text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                  <CustomCalendarIcon size={16}/> Distribuição de Treinos
+                <h3 className="font-bold text-sm text-slate-800 dark:text-white uppercase tracking-wider">
+                  Distribuição de Treinos
                 </h3>
                   
                 <div className="flex gap-3 flex-wrap pb-2">
@@ -877,7 +1178,7 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
                       <div className="flex flex-col md:flex-row gap-4 md:items-center justify-between">
                         <input 
                           type="text" 
-                          value={activeWorkout.name}
+                          value={activeWorkout?.name || ''}
                           onChange={(e) => updateActiveWorkout(w => ({...w, name: e.target.value}))}
                           className="text-2xl font-black text-slate-800 dark:text-white bg-transparent border-none p-0 focus:ring-0 w-full md:w-[250px]"
                           placeholder="Nome do Treino..."
@@ -887,7 +1188,7 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
                            <div className="flex-1 relative">
                               <FileText className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14}/>
                               <input 
-                                value={activeWorkout.guidelines}
+                                value={activeWorkout?.guidelines || ''}
                                 onChange={(e) => updateActiveWorkout(w => ({...w, guidelines: e.target.value}))}
                                 placeholder="Orientações gerais do treino..."
                                 className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:ring-1 focus:ring-primary-500 outline-none text-slate-700 dark:text-slate-200"
@@ -935,9 +1236,9 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
                             <th className="px-2 py-3 min-w-[200px]">Exercício</th>
                             <th className="px-2 py-3 w-20 text-center">Séries</th>
                             <th className="px-2 py-3 w-24 text-center">Reps</th>
-                            {tableSettings.showLoad && <th className="px-2 py-3 w-20 text-center">Carga</th>}
-                            {tableSettings.showRir && <th className="px-2 py-3 w-16 text-center">RIR</th>}
-                            {tableSettings.showRest && <th className="px-2 py-3 w-20 text-center">Descanso</th>}
+                            {tableSettings.showLoad && <th className="px-2 py-3 w-28 text-center">Carga</th>}
+                            {tableSettings.showRir && <th className="px-2 py-3 w-24 text-center">RIR</th>}
+                            {tableSettings.showRest && <th className="px-2 py-3 w-28 text-center">Descanso</th>}
                             <th className="px-2 py-3 min-w-[200px]">Instruções</th>
                             <th className="px-2 py-3 w-[120px] text-right">Ações</th>
                           </tr>
@@ -959,7 +1260,7 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
                               </td>
                               <td className="px-2 py-3">
                                 <input 
-                                  value={exercise.order} 
+                                  value={exercise.order || ''} 
                                   onChange={(e) => updateExercise(exercise.id, 'order', e.target.value)}
                                   className="w-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-primary-500 rounded p-1.5 text-center font-black text-slate-700 dark:text-slate-200 outline-none"
                                   placeholder="A1"
@@ -967,7 +1268,7 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
                               </td>
                               <td className="px-2 py-3">
                                 <select 
-                                  value={exercise.muscleGroup}
+                                  value={exercise.muscleGroup || ''}
                                   onChange={(e) => updateExercise(exercise.id, 'muscleGroup', e.target.value)}
                                   className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-medium text-sm w-full outline-none text-slate-700 dark:text-slate-300 p-1.5 rounded-lg focus:ring-2 focus:ring-primary-500"
                                 >
@@ -977,7 +1278,7 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
                               </td>
                               <td className="px-2 py-3 min-w-[200px] whitespace-normal">
                                 <ExerciseSelect 
-                                  value={exercise.exerciseName}
+                                  value={exercise.exerciseName || ''}
                                   onChange={(val, muscleGroup) => {
                                     updateExercise(exercise.id, 'exerciseName', val);
                                     if (muscleGroup) {
@@ -1000,7 +1301,7 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
                               <td className="px-2 py-3 text-center">
                                 <div className="flex items-center justify-center gap-1">
                                   <input 
-                                    value={exercise.sets} 
+                                    value={exercise.sets || ''} 
                                     onChange={(e) => updateExercise(exercise.id, 'sets', e.target.value)}
                                     className="w-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-primary-500 rounded p-1.5 text-center font-bold text-slate-700 dark:text-slate-200 outline-none"
                                     placeholder="3"
@@ -1014,53 +1315,81 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
                               <td className="px-2 py-3 text-center">
                                 <div className="flex items-center justify-center gap-1">
                                   <input 
-                                    value={exercise.reps} 
+                                    value={exercise.reps || ''} 
                                     onChange={(e) => updateExercise(exercise.id, 'reps', e.target.value)}
                                     className="w-16 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-primary-500 rounded p-1.5 text-center font-bold text-slate-700 dark:text-slate-200 outline-none"
-                                    placeholder="10-12"
+                                    placeholder={
+                                      exercise.repsUnit === 'kcal' ? '250 kcal' :
+                                      exercise.repsUnit === 'distancia' ? '5 km' :
+                                      exercise.repsUnit === 'tempo' ? '45s' :
+                                      exercise.repsUnit === 'rondas' ? '3 rondas' :
+                                      '10-12'
+                                    }
                                   />
                                   <RepsPerSetDropdown 
                                     exercise={exercise}
-                                    onChange={(repsPerSet) => handleSaveRepsPerSet(exercise.id, repsPerSet)}
+                                    onChange={(repsPerSet, unit) => handleSaveRepsPerSet(exercise.id, repsPerSet, unit)}
+                                    onUnitChange={(unit) => updateExercise(exercise.id, 'repsUnit', unit)}
                                   />
                                 </div>
                               </td>
                               {tableSettings.showLoad && (
                                 <td className="px-2 py-3 text-center">
-                                  <input 
-                                    value={exercise.carga || ''} 
-                                    onChange={(e) => updateExercise(exercise.id, 'carga', e.target.value)}
-                                    className="w-16 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-primary-500 rounded p-1.5 text-center font-bold text-slate-700 dark:text-slate-200 outline-none"
-                                    placeholder="kg/lbs"
-                                  />
+                                  <div className="flex items-center justify-center gap-1">
+                                    <input 
+                                      value={exercise.carga || ''} 
+                                      onChange={(e) => updateExercise(exercise.id, 'carga', e.target.value)}
+                                      className="w-16 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-primary-500 rounded p-1.5 text-center font-bold text-slate-700 dark:text-slate-200 outline-none text-xs"
+                                      placeholder="kg/lbs"
+                                    />
+                                    <CargaPerSetDropdown 
+                                      exercise={exercise}
+                                      onChange={(cargaPerSet) => handleSaveCargaPerSet(exercise.id, cargaPerSet)}
+                                      onApplyToMain={(val) => updateExercise(exercise.id, 'carga', val)}
+                                    />
+                                  </div>
                                 </td>
                               )}
                               {tableSettings.showRir && (
                                 <td className="px-2 py-3 text-center">
-                                  <input 
-                                    value={exercise.rir} 
-                                    onChange={(e) => updateExercise(exercise.id, 'rir', e.target.value)}
-                                    className="w-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-primary-500 rounded p-1.5 text-center font-medium text-slate-600 dark:text-slate-300 outline-none"
-                                    placeholder="1-2"
-                                  />
+                                  <div className="flex items-center justify-center gap-1">
+                                    <input 
+                                      value={exercise.rir || ''} 
+                                      onChange={(e) => updateExercise(exercise.id, 'rir', e.target.value)}
+                                      className="w-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-primary-500 rounded p-1.5 text-center font-medium text-slate-600 dark:text-slate-300 outline-none text-xs"
+                                      placeholder="1-2"
+                                    />
+                                    <RirPerSetDropdown 
+                                      exercise={exercise}
+                                      onChange={(rirPerSet) => handleSaveRirPerSet(exercise.id, rirPerSet)}
+                                      onApplyToMain={(val) => updateExercise(exercise.id, 'rir', val)}
+                                    />
+                                  </div>
                                 </td>
                               )}
                               {tableSettings.showRest && (
                               <td className="px-2 py-3 text-center">
-                                <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-1.5 w-[65px] mx-auto focus-within:border-primary-500">
-                                  <Clock size={12} className="text-slate-400 shrink-0"/>
-                                  <input 
-                                    value={exercise.rest} 
-                                    onChange={(e) => updateExercise(exercise.id, 'rest', e.target.value)}
-                                    className="bg-transparent border-none flex-1 text-center font-medium text-slate-600 dark:text-slate-300 outline-none p-0 focus:ring-0 text-sm w-full"
-                                    placeholder="90s"
+                                <div className="flex items-center justify-center gap-1">
+                                  <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded p-1.5 w-[65px] focus-within:border-primary-500">
+                                    <Clock size={12} className="text-slate-400 shrink-0"/>
+                                    <input 
+                                      value={exercise.rest || ''} 
+                                      onChange={(e) => updateExercise(exercise.id, 'rest', e.target.value)}
+                                      className="bg-transparent border-none flex-1 text-center font-medium text-slate-600 dark:text-slate-300 outline-none p-0 focus:ring-0 text-xs w-full"
+                                      placeholder="90s"
+                                    />
+                                  </div>
+                                  <RestPerSetDropdown 
+                                    exercise={exercise}
+                                    onChange={(restPerSet) => handleSaveRestPerSet(exercise.id, restPerSet)}
+                                    onApplyToMain={(val) => updateExercise(exercise.id, 'rest', val)}
                                   />
                                 </div>
                               </td>
                               )}
                               <td className="px-2 py-3 min-w-[200px] whitespace-normal">
                                 <textarea 
-                                  value={exercise.instructions}
+                                  value={exercise.instructions || ''}
                                   onChange={(e) => updateExercise(exercise.id, 'instructions', e.target.value)}
                                   placeholder="Adicionar notas..."
                                   className="w-full text-xs text-slate-600 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700 focus:bg-white dark:focus:bg-slate-800 rounded-lg p-2 focus:ring-2 focus:ring-primary-500 outline-none resize-none h-[34px] overflow-hidden transition-colors"
@@ -1104,13 +1433,13 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
                   
                   {/* 5. VOLUME ESTIMADO */}
                   <div className="mt-4 border-t border-slate-200 dark:border-slate-800 pt-5">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-bold text-[10px] text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <Activity size={12}/> Volume do Treino
+                    <div className="flex flex-col items-center justify-center gap-2 mb-2.5 text-center">
+                      <h3 className="font-bold text-[10px] text-slate-500 uppercase tracking-wider flex items-center justify-center gap-1.5">
+                        <Activity size={12} className="text-primary-500" /> Volume do Treino
                       </h3>
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                    <div className="flex flex-col items-center justify-center gap-2 w-full">
+                      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-xs text-center w-full">
                         {MAIN_MUSCLE_GROUPS.map((mg, i) => {
                           const sets = volumeData[mg] || 0;
                           const goal = MUSCLE_GROUP_GOALS[mg] || 10;
@@ -1126,7 +1455,7 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
                           )
                         })}
                       </div>
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs pt-2 border-t border-slate-100 dark:border-slate-800/60">
+                      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-xs pt-2.5 border-t border-slate-100 dark:border-slate-800/60 text-center w-full">
                         <span className="font-bold text-[10px] text-slate-500 uppercase tracking-wider mr-2">Volume Total:</span>
                         {DETAILED_MUSCLE_GROUPS.map((mg, i) => {
                           const sets = planVolumeData[mg] || 0;
@@ -1200,7 +1529,7 @@ const WorkoutPlanBuilder: React.FC<WorkoutPlanBuilderProps> = ({ planData, onSav
               <input 
                 type="text"
                 autoFocus
-                value={targetModal.target}
+                value={targetModal.target || ''}
                 onChange={e => setTargetModal(prev => ({ ...prev, target: e.target.value }))}
                 placeholder="Ex: 50kg, 12 reps, RPE 8..."
                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-xl p-3 text-sm font-medium text-slate-800 dark:text-white outline-none transition-all"
